@@ -66,7 +66,6 @@ function resolve_multiple_users_form_submit($form, &$form_state) {
 }
 
 function easy_login_user_view($account, $view_mode, $langcode) {
-  drupal_set_message($account->uid);
   iform_load_helpers(array('data_entry_helper'));
   $readAuth=data_entry_helper::get_read_auth(variable_get('indicia_website_id',''), variable_get('indicia_password',''));
   _easy_login_set_view_account_for_table('location', 'name', $account, 'field_location', $readAuth, 
@@ -439,5 +438,5 @@ function easy_login_handle_get_user_id_response($account, $response, &$edit=null
     $_SESSION['uid_to_resolve'] = $account->uid;
     drupal_goto('resolve_multiple_users');
   } elseif (isset($response->error))
-    drupal_set_message($output->error, 'warning');
+    drupal_set_message($response->error, 'warning');
 }
