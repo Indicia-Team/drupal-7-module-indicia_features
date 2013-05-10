@@ -394,7 +394,7 @@ function easy_login_call_get_user_id($account, $force=null, $users_to_merge=null
   $postargs = 'surname='.urlencode($account->field_last_name['und'][0]['value']).'&identifiers='.$identifiers;
   if (count($fieldsToSyncByCaption))
     $postargs .= '&attribute_values='.urlencode(json_encode($fieldsToSyncByCaption));
-  if (!empty($account->field_first_name))
+  if (!empty($account->field_first_name['und'][0]['value']))
     $postargs .= '&first_name='.urlencode($account->field_first_name['und'][0]['value']);
   if ($force && ($force==='merge' || $force==='split')) {
     $postargs .= '&force='.$force;
