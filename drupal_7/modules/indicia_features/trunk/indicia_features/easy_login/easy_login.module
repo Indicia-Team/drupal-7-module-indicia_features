@@ -191,7 +191,10 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
     
     iform_load_helpers(array('data_entry_helper'));
     $readAuth = data_entry_helper::get_read_auth(variable_get('indicia_website_id', ''), variable_get('indicia_password', ''));
-    $lang = $form['field_location']['#language'];
+    if (isset($form['field_location']))
+      $lang = $form['field_location']['#language'];
+    else 
+      $lang = 'und'; // default undefined
     // Hide warehouse link unless admin
     if (!user_access('administer users'))
       unset($form['field_indicia_user_id']);
