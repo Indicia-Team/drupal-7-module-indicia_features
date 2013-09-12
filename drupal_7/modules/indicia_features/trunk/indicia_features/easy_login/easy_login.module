@@ -395,7 +395,7 @@ function easy_login_call_get_user_id($account, $force=null, $users_to_merge=null
   $auth = data_entry_helper::get_read_write_auth(variable_get('indicia_website_id', ''), variable_get('indicia_password', ''));
   $url .= '?nonce='.$auth['write_tokens']['nonce'].'&auth_token='.$auth['write_tokens']['auth_token'].'&cms_user_id='.$account->uid;
   $postargs = 'surname='.urlencode($account->field_last_name['und'][0]['value']).'&identifiers='.$identifiers;
-  if ($account->field_last_name)
+  if (!empty($account->field_indicia_user_id['und'][0]['value']))
     $postargs .= '&warehouse_user_id=' . $account->field_indicia_user_id['und'][0]['value'];
   if (count($fieldsToSyncByCaption))
     $postargs .= '&attribute_values='.urlencode(json_encode($fieldsToSyncByCaption));
