@@ -107,8 +107,10 @@ function easy_login_user_presave(&$edit, $account, $category) {
     // there seems to be an issue in profile_checkboxes, which means that #access=FALSE sets of taxon groups
     // will overwrite the value with empty when it shouldn't. This prevents the overwrite if you don't have access.
     /* TODO: check this & test the access control stuff
-    if (!user_access('administer users'))
-      $edit['profile_taxon_groups_expertise']=serialize(explode(',', $account->profile_taxon_groups_expertise)); */
+    if (!user_access('administer users')) {
+      $edit['profile_taxon_groups_expertise']=serialize(explode(',', $account->profile_taxon_groups_expertise)); 
+      $edit['profile_surveys_expertise']=$account->profile_surveys_expertise)); 
+    } */
     $fieldsToSync = array();
     foreach ($edit as $field=>$def) {
       if (preg_match('/^field_indicia_/', $field) && $field!=='field_indicia_user_id') {
