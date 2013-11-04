@@ -18,6 +18,13 @@ function easy_login_user_default_permissions() {
     ),
     'module' => 'iform',
   );
+  // Exported permission: collate regional records
+  $permissions['collate regional records'] = array(
+    'name' => 'collate regional records',
+    'roles' => array(
+      'regional collator' => 'regional collator',
+    ),
+  );
 
   return $permissions;
 }
