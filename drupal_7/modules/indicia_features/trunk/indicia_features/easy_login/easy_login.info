@@ -37,4 +37,5 @@ features[field_instance][] = user-user-field_surveys_expertise
 features[field_instance][] = user-user-field_taxon_groups
 features[field_instance][] = user-user-field_taxon_groups_expertise
 features[user_permission][] = access iform
+features[user_permission][] = collate regional records
 features[user_role][] = regional collator
