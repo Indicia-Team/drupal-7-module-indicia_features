@@ -22,6 +22,14 @@ function easy_login_menu() {
   return $items;
 }
 
+function easy_login_permission() {
+  return array(
+    'collate regional records' => array(
+      'title' => t('Access and collate records from a region'), 
+    )
+  );
+}
+
 function resolve_multiple_users_form() {
   $userList = $_SESSION['multiple_users_to_resolve'];
   drupal_set_message(t('There appear to be several existing users on the central records database which may or may not be yours. They are users of the '.
