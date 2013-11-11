@@ -1,0 +1,9 @@
+<?php
+
+function indicia_quickstart_enable() {
+  // Enable the custom css theme setting
+  $var_name = 'theme_indiciatheme_settings';
+  $settings = variable_get($var_name, array());
+  $settings['enable_custom_css'] = true;
+  variable_set($var_name, $settings);
+}

@@ -1,0 +1,10 @@
+name = Indicia quickstart
+description = Default site configuration for an Indicia site
+core = 7.x
+package = Indicia Features
+version = 7.x-1.0-beta1
+project = indicia_quickstart
+features[fe_block_settings][] = superfish-1
+features[features_api][] = api:2
+features_exclude[dependencies][fe_block] = fe_block
+features_exclude[dependencies][superfish] = superfish
