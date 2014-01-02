@@ -14,3 +14,20 @@ function indicia_quickstart_block_info_alter(&$blocks, $theme, $code_blocks) {
   $blocks['search']['form']['status'] = 0;
 }
  
+/**
+ * Implement hook_variable_info.
+ * Returns information about the variables declared by this module, allowing an admin interface
+ * to be created. We use a couple of custom extensions to allow these to be added to the Indicia
+ * settings page.
+ */
+function indicia_quickstart_variable_info($options) {
+  $variable['indicia_master_checklist_id']=array(
+    'title'=>t('Master species checklist'),
+    'description'=>t('Select the species checklist used as an all species hierarchy.'),
+    'type'=>'number',
+    'subtype'=>'taxon_list.title',
+    'default'=>'',
+    'addToIndiciaSettingsPage'=>true
+  );
+  return $variable;
+}
