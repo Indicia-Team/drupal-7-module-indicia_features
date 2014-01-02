@@ -1,9 +1,20 @@
 <?php
 
 function indicia_quickstart_enable() {
+  // Theme settings all go in one variable. So load the settings which we can then modify and write back.
+  $settings = variable_get('theme_indiciatheme_settings', array());
   // Enable the custom css theme setting
-  $var_name = 'theme_indiciatheme_settings';
-  $settings = variable_get($var_name, array());
   $settings['enable_custom_css'] = true;
-  variable_set($var_name, $settings);
+  // make the max page reasonably wide
+  $settings['edit-bigscreen-max-width'] = 1400;
+  variable_set('theme_indiciatheme_settings', $settings);
+  // change nolink items in menu to <a> as they theme much better than <span>
+  variable_set('special_menu_items_nolink_tag', '<a>');
+  // add a log in menu item to the user menu
+  $item=array(
+    'link_path'=>'user/login',
+    'link_title'=>'Login',
+    'menu_name'=>'user-menu',
+  );
+  menu_link_save($item);
 }
