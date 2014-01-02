@@ -103,22 +103,26 @@ function easy_login_user_login(&$edit, $account) {
     drupal_set_message('Please set at least your last name on your '.l('user account', 'user/'.$account->uid.'/edit').
         '. This will allow your user registration to be linked properly to the central database of records.');
     return;
+  } elseif (empty($account->field_indicia_user_id)) {
+    $response = easy_login_call_get_user_id($account);
+    easy_login_handle_get_user_id_response($account, $response);
   }
 }
 
-function easy_login_user_presave(&$edit, $account, $category) {
+/**
+ * Overwrites the content of the account object with any updates from the posted form. Does not save to the db.
+ */
+function easy_login_move_form_data_into_account($edit, &$account) {
+  foreach ($edit as $key=>$data) {
+    $account->$key=$data;
+  }
+}
+
+function easy_login_custom_user_postsave(&$edit, $account, $category) {
   $fieldsToSyncByCaption = array();
-  if ($account->uid)
-    $existingUser = user_load($account->uid);
+  $existingUser = user_load($account->uid);
   // $edit can be empty during initial registration
   if (!empty($edit)) {
-    // there seems to be an issue in profile_checkboxes, which means that #access=FALSE sets of taxon groups
-    // will overwrite the value with empty when it shouldn't. This prevents the overwrite if you don't have access.
-    /* TODO: check this & test the access control stuff
-    if (!user_access('administer users')) {
-      $edit['profile_taxon_groups_expertise']=serialize(explode(',', $account->profile_taxon_groups_expertise)); 
-      $edit['profile_surveys_expertise']=$account->profile_surveys_expertise)); 
-    } */
     $fieldsToSync = array();
     foreach ($edit as $field=>$def) {
       if (preg_match('/^field_indicia_/', $field) && $field!=='field_indicia_user_id') {
@@ -126,7 +130,7 @@ function easy_login_user_presave(&$edit, $account, $category) {
         // fields that are available for synchronisation must be called field_indicia_*. We
         // also don't want to handle anything that has not actually changed.
         $userField = $existingUser->$field;
-        if ((!isset($existingUser) || $value !== $userField['und'][0]['value'])) {
+        if ($value !== $userField['und'][0]['value']) {
           $fieldsToSync[$field] = $value;
         }
       }
@@ -159,10 +163,23 @@ function easy_login_user_presave(&$edit, $account, $category) {
           )
       ));
   }
-  $_updating_account=true;
-  $response = easy_login_call_get_user_id($account, null, null, $fieldsToSyncByCaption);
-  easy_login_handle_get_user_id_response($account, $response, $edit);
-  $_updating_account=false;
+  easy_login_move_form_data_into_account($edit, $account);
+  $response=easy_login_call_get_user_id($account, null, null, $fieldsToSyncByCaption);
+  easy_login_handle_get_user_id_response($account, $response);
+}
+
+/**
+ * Implements hook_user_insert
+ */
+function easy_login_user_insert(&$edit, $account, $category) {
+  easy_login_custom_user_postsave($edit, $account, $category);
+}
+
+/**
+ * Implements hook_user_update
+ */
+function easy_login_user_update(&$edit, $account, $category) {
+  easy_login_custom_user_postsave($edit, $account, $category);
 }
 
 /**
@@ -383,7 +400,7 @@ function _easy_login_get_user_field_as_list($table, $account, $userField, $title
 
 /**
  * Function to call the get_user_id service on the warehouse.
- * @param object $account User object.
+ * @param object $account User account object
  * @param string $force Set to merge (to force a merge operation) or split (to force no merge).
  * @param array $users_to_merge If force is set to merge, but only some users must be merged,
  * pass an array of the user IDs.
@@ -393,14 +410,6 @@ function easy_login_call_get_user_id($account, $force=null, $users_to_merge=null
   iform_load_helpers(array('data_entry_helper'));
   $url = data_entry_helper::$base_url.'index.php/services/user_identifier/get_user_id';
   $identifiers = array(array('type'=>'email','identifier'=>$account->mail));
-  // add twitter, fb and openID accounts here
-  // @todo OpenID and fb.
-  if (module_exists('twitter')) {
-    $twitterAccounts = twitter_get_user_accounts($account->uid);
-    foreach ($twitterAccounts as $twitterAccount) {
-      $identifiers[] = array('type'=>'twitter', 'identifier'=>$twitterAccount->screen_name);
-    }
-  }
   $identifiers = urlencode(json_encode($identifiers));
   $auth = data_entry_helper::get_read_write_auth(variable_get('indicia_website_id', ''), variable_get('indicia_password', ''));
   $url .= '?nonce='.$auth['write_tokens']['nonce'].'&auth_token='.$auth['write_tokens']['auth_token'].'&cms_user_id='.$account->uid;
@@ -427,21 +436,27 @@ function easy_login_call_get_user_id($account, $force=null, $users_to_merge=null
 
 /**
  * Handle the response from a call to get_user_id on the warehouse services.
- * @param type $account
+ * @param type $account User object to save to
  * @param string $response Response from call to get_user_id (should be a json string).
  */
-function easy_login_handle_get_user_id_response($account, $response, &$edit=null) {
+function easy_login_handle_get_user_id_response($account, $response) {
   $response = json_decode($response);
   if (isset($response->userId)) {
     if ($account->field_indicia_user_id!=$response->userId) {
-      $edit['field_indicia_user_id']['und'][0]['value'] = $response->userId;
-      if (empty($account->field_indicia_user_id))
+      if (empty($account->field_indicia_user_id) || empty($account->field_indicia_user_id['und']))
         drupal_set_message(t('Your user account is now linked to the central records database.'));
       else
         drupal_set_message(t('Your user account link to the central records database has been updated.'));
+      $account->field_indicia_user_id['und'][0]['value'] = $response->userId;
+      $info = field_info_field('field_indicia_user_id');
+      $fields = array($info['id']);
+      //Execute the storage function
+      field_sql_storage_field_storage_write('user', $account,  FIELD_STORAGE_UPDATE, $fields); 
+      // clear field cache
+      cache_clear_all("field:user:$account->uid", 'cache_field');
     }
     /*
-     * @todo: store values synched frmo the warehouse account
+     * @todo: store values synched from the warehouse account
     if (isset($response->attrs)) {
       // got a list of profile attributes to update
       foreach($response->attrs as $caption => $value) {
@@ -455,3 +470,4 @@ function easy_login_handle_get_user_id_response($account, $response, &$edit=null
   } elseif (isset($response->error))
     drupal_set_message($response->error, 'warning');
 }
+
