@@ -21,7 +21,7 @@ function indicia_quickstart_block_info_alter(&$blocks, $theme, $code_blocks) {
  * settings page.
  */
 function indicia_quickstart_variable_info($options) {
-  $variable['indicia_master_checklist_id']=array(
+  $variable['iform_master_checklist_id']=array(
     'title'=>t('Master species checklist'),
     'description'=>t('Select the species checklist used as an all species hierarchy.'),
     'type'=>'number',
