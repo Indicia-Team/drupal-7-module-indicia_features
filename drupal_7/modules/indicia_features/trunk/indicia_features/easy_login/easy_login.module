@@ -78,16 +78,28 @@ function easy_login_user_view($account, $view_mode, $langcode) {
   $readAuth=data_entry_helper::get_read_auth(variable_get('indicia_website_id',''), variable_get('indicia_password',''));
   _easy_login_set_view_account_for_table('location', 'name', $account, 'field_location', $readAuth, 
       'Recording preferences', 'Your preferred locality for recording is !items.');
-  _easy_login_set_view_account_for_table('location', 'name', $account, 'field_location_expertise', $readAuth, 
-      'Verification settings', 'Your locality for verification is !items.');
-  _easy_login_set_view_account_for_table('location', 'name', $account, 'field_location_collation', $readAuth, 
-      'Data collation settings', 'Your locality for data collation downloads is !items.');
+  if (user_access('verification', $account))
+    _easy_login_set_view_account_for_table('location', 'name', $account, 'field_location_expertise', $readAuth, 
+        'Verification settings', 'Your locality for verification is !items.');
+  else
+    unset($account->content['field_location_expertise']);
+  if (user_access('collate regional records', $account))
+    _easy_login_set_view_account_for_table('location', 'name', $account, 'field_location_collation', $readAuth, 
+        'Data collation settings', 'Your locality for data collation downloads is !items.');
+  else
+    unset($account->content['field_location_collation']);
   _easy_login_set_view_account_for_table('taxon_group', 'title', $account, 'field_taxon_groups', $readAuth, 
       'Recording preferences', 'Your preferred species groups for recording are !items.');
-  _easy_login_set_view_account_for_table('taxon_group', 'title', $account, 'field_taxon_groups_expertise', $readAuth, 
-      'Verification settings', 'Your species groups for verification are !items.');
-  _easy_login_set_view_account_for_table('survey', 'title', $account, 'field_surveys_expertise', $readAuth, 
-      'Verification settings', 'Your surveys for verification are !items.');
+  if (user_access('verification', $account)) {
+    _easy_login_set_view_account_for_table('taxon_group', 'title', $account, 'field_taxon_groups_expertise', $readAuth, 
+        'Verification settings', 'Your species groups for verification are !items.');
+    _easy_login_set_view_account_for_table('survey', 'title', $account, 'field_surveys_expertise', $readAuth, 
+        'Verification settings', 'Your surveys for verification are !items.');
+  }
+  else {
+    unset($account->content['field_taxon_groups_expertise']);
+    unset($account->content['field_surveys_expertise']);
+  }
   if (isset($account->content['field_record_privacy'])) {
     // convert a boolean to something more readable
     $account->content['field_record_privacy']['#title']=t('Record privacy');
