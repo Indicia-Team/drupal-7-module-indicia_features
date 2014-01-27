@@ -132,6 +132,7 @@ function easy_login_move_form_data_into_account($edit, &$account) {
 
 function easy_login_custom_user_postsave(&$edit, $account, $category) {
   $fieldsToSyncByCaption = array();
+  global $user;
   $existingUser = user_load($account->uid);
   // $edit can be empty during initial registration
   if (!empty($edit)) {
@@ -158,22 +159,24 @@ function easy_login_custom_user_postsave(&$edit, $account, $category) {
         $fieldsToSyncByCaption[$blob['label']]=$fieldsToSync[$row->field_name];
       }
     }
-    // If the user has not filled in preferences then prompt them. Allow for the fact that the site administrator might have
-    // hidden these fields if they feel they are not relevant to the site.
-    $requests = array();
-    // $account->field_taxon_groups etc contains something if the field exist
-    if (isset($account->field_location) && empty($edit['field_location']['und']))
-      $requests[] = t('the area you would most often like to record in');
-    if (isset($account->field_taxon_groups) && empty($edit['field_taxon_groups']['und']))
-      $requests[] = t('the list of species groups you are particularly interested in');
-    if (!empty($requests))
-      drupal_set_message(t('Why not tell us !requests to help us tailor the system to your needs? '.
-          'You can fill this information in on your !link.',
-          array(
-            '!requests'=>implode(' '.t('and').' ', $requests),
-            '!link'=>l('user preferences', 'user/'.$account->uid.'/edit')
-          )
-      ));
+    if ($account->uid===$user->uid) {
+      // If the user has not filled in preferences then prompt them. Allow for the fact that the site administrator might have
+      // hidden these fields if they feel they are not relevant to the site.
+      $requests = array();
+      // $account->field_taxon_groups etc contains something if the field exist
+      if (isset($account->field_location) && empty($edit['field_location']['und']))
+        $requests[] = t('the area you would most often like to record in');
+      if (isset($account->field_taxon_groups) && empty($edit['field_taxon_groups']['und']))
+        $requests[] = t('the list of species groups you are particularly interested in');
+      if (!empty($requests))
+        drupal_set_message(t('Why not tell us !requests to help us tailor the system to your needs? '.
+            'You can fill this information in on your !link.',
+            array(
+              '!requests'=>implode(' '.t('and').' ', $requests),
+              '!link'=>l('user preferences', 'user/'.$account->uid.'/edit')
+            )
+        ));
+    }
   }
   easy_login_move_form_data_into_account($edit, $account);
   $response=easy_login_call_get_user_id($account, null, null, $fieldsToSyncByCaption);
@@ -453,12 +456,16 @@ function easy_login_call_get_user_id($account, $force=null, $users_to_merge=null
  */
 function easy_login_handle_get_user_id_response($account, $response) {
   $response = json_decode($response);
+  global $user;
   if (isset($response->userId)) {
     if ($account->field_indicia_user_id!=$response->userId) {
-      if (empty($account->field_indicia_user_id) || empty($account->field_indicia_user_id['und']))
-        drupal_set_message(t('Your user account is now linked to the central records database.'));
-      else
-        drupal_set_message(t('Your user account link to the central records database has been updated.'));
+      if ($account->uid===$user->uid) {
+        // no need for these messages during registration
+        if (empty($account->field_indicia_user_id) || empty($account->field_indicia_user_id['und']))
+          drupal_set_message(t('Your user account is now linked to the central records database.'));
+        else
+          drupal_set_message(t('Your user account link to the central records database has been updated.'));
+      }
       $account->field_indicia_user_id['und'][0]['value'] = $response->userId;
       $info = field_info_field('field_indicia_user_id');
       $fields = array($info['id']);
