@@ -17,4 +17,11 @@ function indicia_quickstart_enable() {
     'menu_name'=>'user-menu',
   );
   menu_link_save($item);
+  $item=array(
+    'link_path'=>'user/register',
+    'link_title'=>'Register',
+    'menu_name'=>'user-menu',
+  );
+  // add a register menu item to the user menu
+  menu_link_save($item);
 }
