@@ -56,7 +56,7 @@ userFilterMode=allvisible',
     [
       {
         "caption":"Edit this group",
-        "img":"{rootFolder}/sites/all/modules/iform/media/images/nuvola/package_editors-22px.png",
+        "img":"{rootFolder}sites/all/modules/iform/media/images/nuvola/package_editors-22px.png",
         "visibility_field":"administrator",
         "url":"{rootFolder}groups/edit",
         "urlParams":
@@ -66,7 +66,7 @@ userFilterMode=allvisible',
       },
       {
         "caption":"Invite members to this group",
-        "img":"{rootFolder}/sites/all/modules/iform/media/images/nuvola/mail_send-22px.png",
+        "img":"{rootFolder}sites/all/modules/iform/media/images/nuvola/mail_send-22px.png",
         "visibility_field":"administrator",
         "url":"{rootFolder}groups/invite",
         "urlParams":
@@ -76,7 +76,7 @@ userFilterMode=allvisible',
       },
       {
         "caption":"Join this group",
-        "img":"{rootFolder}/sites/all/modules/iform/media/images/nuvola/services-22px.png",
+        "img":"{rootFolder}sites/all/modules/iform/media/images/nuvola/services-22px.png",
         "visibility_field":"canrequestorjoin",
         "url":"{rootFolder}groups/join",
         "urlParams":
@@ -292,7 +292,7 @@ I=Membership by invite only',
     'include_report_filter' => 1,
     'include_private_records' => 0,
     'include_administrators' => 1,
-    'include_members' => 1,
+    'include_members' => 0,
     'data_inclusion_mode' => 'choose',
     'filter_types' => '{"":"what,where,when","Advanced":"source,quality"}',
     'redirect_on_success' => 'groups/invite',
@@ -744,6 +744,7 @@ pending_path={rootFolder}?q=groups/pending&group_id=',
     'param_ignores' => '',
     'items_per_page' => 20,
     'output' => 'default',
+    'param_lookup_extras' => '',
     'report_group' => 'report',
     'remember_params_report_group' => '',
     'params_in_map_toolbar' => 0,
@@ -765,7 +766,7 @@ pending_path={rootFolder}?q=groups/pending&group_id=',
     [
       {
         "caption":"Edit this group",
-        "img":"{rootFolder}/sites/all/modules/iform/media/images/nuvola/package_editors-22px.png",
+        "img":"{rootFolder}sites/all/modules/iform/media/images/nuvola/package_editors-22px.png",
         "visibility_field":"administrator",
         "url":"{rootFolder}groups/edit",
         "urlParams":
@@ -775,19 +776,9 @@ pending_path={rootFolder}?q=groups/pending&group_id=',
       },
       {
         "caption":"Invite members to this group",
-        "img":"{rootFolder}/sites/all/modules/iform/media/images/nuvola/mail_send-22px.png",
+        "img":"{rootFolder}sites/all/modules/iform/media/images/nuvola/mail_send-22px.png",
         "visibility_field":"administrator",
         "url":"{rootFolder}groups/invite",
-        "urlParams":
-        {
-          "group_id":"{id}"
-        }
-      },
-      {
-        "caption":"Group home page",
-        "img":"{rootFolder}/sites/all/modules/iform/media/images/nuvola/gohome-22px.png",
-        "visibility_field":"member",
-        "url":"{rootFolder}groups/home",
         "urlParams":
         {
           "group_id":"{id}"
@@ -1000,7 +991,7 @@ pending_path={rootFolder}?q=groups/pending&group_id=',
     'standard_controls' => 'layerSwitcher
 panZoomBar',
     'display_user_profile_location' => 0,
-    'interface' => 'one_page',
+    'interface' => 'tabs',
     'structure' => '=Species=
 [reportgrid]
 @dataSource=library/taxa/filterable_explore_list
