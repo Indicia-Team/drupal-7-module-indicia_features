@@ -106,10 +106,14 @@ userFilterMode=allvisible',
   'body' => array(
     'und' => array(
       0 => array(
-        'value' => '',
+        'value' => '<p>The following list shows the local recording groups that have been registered on this website. For groups you are a member of, access the group\'s own recording and reporting pages via the links in the Links column. For other groups, if the group is open to new members, click the star icon next to the group to request to join the group.</p>
+<p>You can also create your own local recording group by clicking the <strong>Create a new local recording group</strong> button at the bottom of the page. If you are an administrator of one of the groups, then the icons in the Actions column allow you to edit the group details and invite new members.</p>
+',
         'summary' => NULL,
         'format' => 'filtered_html',
-        'safe_value' => '',
+        'safe_value' => '<p>The following list shows the local recording groups that have been registered on this website. For groups you are a member of, access the group\'s own recording and reporting pages via the links in the Links column. For other groups, if the group is open to new members, click the star icon next to the group to request to join the group.<br />
+You can also create your own local recording group by clicking the <strong>Create a new local recording group</strong> button at the bottom of the page. If you are an administrator of one of the groups, then the icons in the Actions column allow you to edit the group details and invite new members.</p>
+',
         'safe_summary' => '',
       ),
     ),
@@ -734,8 +738,8 @@ searchArea=',
   'translate' => 0,
   'uuid' => '644236b5-113f-4cf7-80cd-ad5c8f8845c8',
   'params' => array(
-    'view_access_control' => 0,
-    'permission_name' => '',
+    'view_access_control' => 1,
+    'permission_name' => 'online recording',
     'report_name' => 'library/groups/groups_list',
     'param_presets' => 'currentUser={profile_indicia_user_id}
 userFilterMode=member
@@ -803,7 +807,37 @@ pending_path={rootFolder}?q=groups/pending&group_id=',
   'needs_review' => 3,
   'available_for_groups' => 0,
   'limit_to_group_id' => NULL,
-  'body' => array(),
+  'body' => array(
+    'und' => array(
+      0 => array(
+        'value' => '<div id="content">
+	<div class="block block-system no-title odd first last block-count-3 block-region-content block-main" id="block-system-main">
+		<article class="node node-iform article odd node-full ia-n clearfix" id="node-1" role="article">
+			<div class="node-content">
+				<div class="field field-name-body field-type-text-with-summary field-label-hidden view-mode-full">
+					<div class="field-items">
+						<div class="field-item even">
+							<p>The following list shows the local recording groups that have been registered on this website which you are already a member of. Access the group\'s own recording and reporting pages via the links in the Links column.</p>
+							<p>To find other groups to join, visit the <a href="?q=groups/list">Browse local recording groups</a> page. You can also create your own local recording group by clicking the <strong>Create a new local recording group</strong> button at the bottom of the page. If you are an administrator of one of the groups, then the icons in the Actions column allow you to edit the group details and invite new members.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</article>
+	</div>
+</div>
+<p>&nbsp;</p>
+',
+        'summary' => NULL,
+        'format' => 'filtered_html',
+        'safe_value' => '<p>The following list shows the local recording groups that have been registered on this website which you are already a member of. Access the group\'s own recording and reporting pages via the links in the Links column.<br />
+							To find other groups to join, visit the <a href="?q=groups/list">Browse local recording groups</a> page. You can also create your own local recording group by clicking the <strong>Create a new local recording group</strong> button at the bottom of the page. If you are an administrator of one of the groups, then the icons in the Actions column allow you to edit the group details and invite new members.</p>
+<p> </p>
+',
+        'safe_summary' => '',
+      ),
+    ),
+  ),
   'rdf_mapping' => array(
     'rdftype' => array(
       0 => 'sioc:Item',
