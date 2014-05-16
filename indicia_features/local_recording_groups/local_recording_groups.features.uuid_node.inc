@@ -990,6 +990,104 @@ pending_path={rootFolder}?q=groups/pending&group_id=',
 );
   $nodes[] = array(
   'uid' => 1,
+  'title' => 'Group membership administration',
+  'log' => '',
+  'status' => 1,
+  'comment' => 1,
+  'promote' => 0,
+  'sticky' => 0,
+  'vuuid' => '679095a7-a3e6-4c56-b650-ff08dfdcd652',
+  'type' => 'iform',
+  'language' => 'und',
+  'tnid' => 0,
+  'translate' => 0,
+  'uuid' => '86c6dcb1-b284-4ef6-9484-518fddc5b089',
+  'params' => array(
+    'view_access_control' => 1,
+    'permission_name' => 'online recording',
+    'redirect_on_success' => '',
+    'message_after_save' => 1,
+    'additional_css' => '',
+    'additional_templates' => '',
+  ),
+  'iform' => 'group_admin',
+  'needs_review' => 3,
+  'available_for_groups' => 0,
+  'limit_to_group_id' => NULL,
+  'body' => array(
+    'und' => array(
+      0 => array(
+        'value' => '',
+        'summary' => NULL,
+        'format' => 'filtered_html',
+        'safe_value' => '',
+        'safe_summary' => '',
+      ),
+    ),
+  ),
+  'rdf_mapping' => array(
+    'rdftype' => array(
+      0 => 'sioc:Item',
+      1 => 'foaf:Document',
+    ),
+    'title' => array(
+      'predicates' => array(
+        0 => 'dc:title',
+      ),
+    ),
+    'created' => array(
+      'predicates' => array(
+        0 => 'dc:date',
+        1 => 'dc:created',
+      ),
+      'datatype' => 'xsd:dateTime',
+      'callback' => 'date_iso8601',
+    ),
+    'changed' => array(
+      'predicates' => array(
+        0 => 'dc:modified',
+      ),
+      'datatype' => 'xsd:dateTime',
+      'callback' => 'date_iso8601',
+    ),
+    'body' => array(
+      'predicates' => array(
+        0 => 'content:encoded',
+      ),
+    ),
+    'uid' => array(
+      'predicates' => array(
+        0 => 'sioc:has_creator',
+      ),
+      'type' => 'rel',
+    ),
+    'name' => array(
+      'predicates' => array(
+        0 => 'foaf:name',
+      ),
+    ),
+    'comment_count' => array(
+      'predicates' => array(
+        0 => 'sioc:num_replies',
+      ),
+      'datatype' => 'xsd:integer',
+    ),
+    'last_activity' => array(
+      'predicates' => array(
+        0 => 'sioc:last_activity_date',
+      ),
+      'datatype' => 'xsd:dateTime',
+      'callback' => 'date_iso8601',
+    ),
+  ),
+  'cid' => 0,
+  'last_comment_uid' => 1,
+  'name' => 'admin',
+  'picture' => 0,
+  'data' => 'a:6:{s:16:"ckeditor_default";s:1:"t";s:20:"ckeditor_show_toggle";s:1:"t";s:14:"ckeditor_width";s:4:"100%";s:13:"ckeditor_lang";s:2:"en";s:18:"ckeditor_auto_lang";s:1:"t";s:7:"overlay";i:1;}',
+);
+  $nodes[] = array(
+  'uid' => 1,
   'title' => 'Group summary',
   'log' => '',
   'status' => 1,
