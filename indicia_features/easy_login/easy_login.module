@@ -237,9 +237,11 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
       $lang = $form['field_location']['#language'];
     else 
       $lang = 'und'; // default undefined
-    // Hide warehouse link unless admin
-    if (!user_access('administer users'))
+    // Hide warehouse link and remembered field mappings unless admin
+    if (!user_access('administer users')) {
       unset($form['field_indicia_user_id']);
+      unset($form['field_import_field_mappings']);
+    }
     // The fields can be hidden for sites that don't want them, so check they exist on the form.
     if (isset($form['field_location']) || isset($form['field_location_expertise'])) {
       $locations=easy_login_get_locations($readAuth,'indicia_profile_location_type_id');
