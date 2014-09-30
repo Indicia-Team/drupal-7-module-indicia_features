@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @file
+ * The install file for the discussion forum feature.
+ */
+
+/**
+ * Implements hook_enable().
+ *
+ * When enabling the discussion forum, add a default Miscellaneous forum section
+ * otherwise it can be a bit confusing with the forum being blank.
+ * NB, we can't use UUID_features to add the term, because the vocabulary is
+ * added when the forum module is enabled, and therefore does not have a UUID.
+ */
+function discussion_forum_enable() {
+  if (!$vocabulary = taxonomy_vocabulary_load(variable_get('forum_nav_vocabulary', 0))) {
+    throw new Exception('Forums vocabulary not installed');
+  }
+  $query = db_query("SELECT COUNT(*) as count FROM {taxonomy_term_data} WHERE vid=%d AND name='%s'",
+      $vocabulary->vid, t('Miscellaneous'));
+  $count = db_fetch_object($query);
+  if ($count->count == 0) {
+    $term = array('vid' => $vocabulary->vid, 'name' => t('Miscellaneous'));
+    taxonomy_term_save($term);
+  }
+  drupal_set_message(t('Your forum is now enabled and can be accessed <a href="@forum">at this page</a>. To configure the list of forums and subforums, please <a href="@taxonomy">edit the terms in the Forums vocabulary</a>.',
+        array(
+          '@forum' => url('forum'),
+          '@taxonomy' => url('admin/content/taxonomy/' . $vocabulary->vid),
+        ))
+  );
+}
