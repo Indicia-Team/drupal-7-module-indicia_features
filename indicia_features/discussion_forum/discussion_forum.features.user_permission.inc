@@ -3,6 +3,8 @@
 /**
  * @file
  * The permissions for this feature.
+ * 
+ * Assumes there are roles of 'admin user' and 'site editor'
  */
 
 /**
@@ -26,8 +28,8 @@ function discussion_forum_user_default_permissions() {
   );
 
   // Exported permission: create forum topics.
-  $permissions['create forum topics'] = array(
-    'name' => 'create forum topics',
+  $permissions['create forum content'] = array(
+    'name' => 'create forum content',
     'roles' => array(
       '0' => 'admin user',
       '1' => 'authenticated user',
@@ -35,8 +37,8 @@ function discussion_forum_user_default_permissions() {
   );
 
   // Exported permission: delete any forum topic.
-  $permissions['delete any forum topic'] = array(
-    'name' => 'delete any forum topic',
+  $permissions['delete any forum content'] = array(
+    'name' => 'delete any forum content',
     'roles' => array(
       '0' => 'admin user',
       '1' => 'site editor',
@@ -44,8 +46,8 @@ function discussion_forum_user_default_permissions() {
   );
 
   // Exported permission: delete own forum topics.
-  $permissions['delete own forum topics'] = array(
-    'name' => 'delete own forum topics',
+  $permissions['delete own forum content'] = array(
+    'name' => 'delete own forum content',
     'roles' => array(
       '0' => 'admin user',
       '1' => 'authenticated user',
@@ -53,8 +55,8 @@ function discussion_forum_user_default_permissions() {
   );
 
   // Exported permission: edit any forum topic.
-  $permissions['edit any forum topic'] = array(
-    'name' => 'edit any forum topic',
+  $permissions['edit any forum content'] = array(
+    'name' => 'edit any forum content',
     'roles' => array(
       '0' => 'admin user',
       '1' => 'site editor',
@@ -62,8 +64,8 @@ function discussion_forum_user_default_permissions() {
   );
 
   // Exported permission: edit own forum topics.
-  $permissions['edit own forum topics'] = array(
-    'name' => 'edit own forum topics',
+  $permissions['edit own forum content'] = array(
+    'name' => 'edit own forum content',
     'roles' => array(
       '0' => 'admin user',
       '1' => 'authenticated user',
