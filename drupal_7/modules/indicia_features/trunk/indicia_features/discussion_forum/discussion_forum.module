@@ -1,8 +1,0 @@
-<?php
-
-/**
- * @file
- * The module file for the discussion forum feature.
- *
- * Drupal needs this file to exist even though it is blank.
- */
