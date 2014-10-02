@@ -1,0 +1,13 @@
+<?php
+/**
+ * @file
+ * The install file for notification_emails.
+ */
+
+/**
+ * Implements hook_enable().
+ */
+function notification_emails_enable() {
+  drupal_set_message(t('You have enabled the Notification Emails module. You are now able to manage how often you will receive emails which alert you to new notifications that you have received.
+          For this to work the Notification Emails warehouse module must also be enabled.'));
+}
