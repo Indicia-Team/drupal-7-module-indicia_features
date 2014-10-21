@@ -73,6 +73,10 @@ function resolve_multiple_users_form_submit($form, &$form_state) {
   drupal_goto('user/'.$user->uid.'/edit');
 }
 
+/**
+ * Implement hook_user_view.
+ * Tidies up the view tab of a user account.
+ */
 function easy_login_user_view($account, $view_mode, $langcode) {
   iform_load_helpers(array('data_entry_helper'));
   $readAuth=data_entry_helper::get_read_auth(variable_get('indicia_website_id',''), variable_get('indicia_password',''));
@@ -115,22 +119,19 @@ function easy_login_user_login(&$edit, $account) {
     drupal_set_message('Please set at least your last name on your '.l('user account', 'user/'.$account->uid.'/edit').
         '. This will allow your user registration to be linked properly to the central database of records.');
     return;
-  } elseif (empty($account->field_indicia_user_id)) {
-    $response = easy_login_call_get_user_id($account);
-    easy_login_handle_get_user_id_response($account, $response);
+  } 
+  elseif ($account->access!==0 && !empty($account->field_indicia_user_id))
+    // if not first login and we know our indicia user ID, then there is nothing more to do
+    return;
+  else {
+    // if we've logged in before but don't have a warehouse user ID, then it means Easy Login was installed since
+    // we last logged in. So there might be existing records to move into our user account.
+    $needToProcessExistingRecords = ($account->access!==0) && empty($account->field_indicia_user_id);
+    easy_login_synchronise_account_to_warehouse($edit, $account, $needToProcessExistingRecords);
   }
 }
 
-/**
- * Overwrites the content of the account object with any updates from the posted form. Does not save to the db.
- */
-function easy_login_move_form_data_into_account($edit, &$account) {
-  foreach ($edit as $key=>$data) {
-    $account->$key=$data;
-  }
-}
-
-function easy_login_custom_user_postsave(&$edit, $account, $category) {
+function easy_login_synchronise_account_to_warehouse(&$edit, $account, $needToProcessExistingRecords) {
   $fieldsToSyncByCaption = array();
   global $user;
   $existingUser = user_load($account->uid);
@@ -179,22 +180,25 @@ function easy_login_custom_user_postsave(&$edit, $account, $category) {
     }
   }
   easy_login_move_form_data_into_account($edit, $account);
-  $response=easy_login_call_get_user_id($account, null, null, $fieldsToSyncByCaption);
+  $response=easy_login_call_get_user_id($account, null, null, $fieldsToSyncByCaption, $needToProcessExistingRecords);
   easy_login_handle_get_user_id_response($account, $response);
 }
 
 /**
- * Implements hook_user_insert
+ * Overwrites the content of the account object with any updates from the posted form. Does not save to the db.
  */
-function easy_login_user_insert(&$edit, $account, $category) {
-  easy_login_custom_user_postsave($edit, $account, $category);
+function easy_login_move_form_data_into_account($edit, &$account) {
+  foreach ($edit as $key=>$data) {
+    if (substr($key, 0, 6)==='field_')
+      $account->$key=$data;
+  }
 }
 
 /**
  * Implements hook_user_update
  */
 function easy_login_user_update(&$edit, $account, $category) {
-  easy_login_custom_user_postsave($edit, $account, $category);
+  easy_login_synchronise_account_to_warehouse($edit, $account, false);
 }
 
 /**
@@ -423,13 +427,15 @@ function _easy_login_get_user_field_as_list($table, $account, $userField, $title
  * pass an array of the user IDs.
  * @return string Response from call to get_user_id
  */
-function easy_login_call_get_user_id($account, $force=null, $users_to_merge=null, $fieldsToSyncByCaption=array()) {
+function easy_login_call_get_user_id($account, $force=null, $users_to_merge=null, $fieldsToSyncByCaption=array(), $needToProcessExistingRecords=false) {
   iform_load_helpers(array('data_entry_helper'));
   $url = data_entry_helper::$base_url.'index.php/services/user_identifier/get_user_id';
   $identifiers = array(array('type'=>'email','identifier'=>$account->mail));
   $identifiers = urlencode(json_encode($identifiers));
   $auth = data_entry_helper::get_read_write_auth(variable_get('indicia_website_id', ''), variable_get('indicia_password', ''));
-  $url .= '?nonce='.$auth['write_tokens']['nonce'].'&auth_token='.$auth['write_tokens']['auth_token'].'&cms_user_id='.$account->uid;
+  $url .= '?nonce='.$auth['write_tokens']['nonce'].'&auth_token='.$auth['write_tokens']['auth_token'];
+  if ($needToProcessExistingRecords)
+    $url .= '&cms_user_id='.$account->uid;
   $postargs = 'surname='.urlencode($account->field_last_name['und'][0]['value']).'&identifiers='.$identifiers;
   if (!empty($account->field_indicia_user_id['und'][0]['value']))
     $postargs .= '&warehouse_user_id=' . $account->field_indicia_user_id['und'][0]['value'];
