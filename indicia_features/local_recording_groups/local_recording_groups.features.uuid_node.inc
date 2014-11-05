@@ -29,7 +29,8 @@ function local_recording_groups_uuid_features_default_content() {
     'permission_name' => 'online recording',
     'report_name' => 'library/groups/groups_list',
     'param_presets' => 'currentUser={profile_indicia_user_id}
-userFilterMode=allvisible',
+userFilterMode=allvisible
+pending_path={rootFolder}?q=groups/pending&group_id=',
     'param_defaults' => '',
     'param_ignores' => '',
     'items_per_page' => 20,
@@ -299,6 +300,8 @@ I=Membership by invite only',
     'include_members' => 0,
     'data_inclusion_mode' => 'choose',
     'filter_types' => '{"":"what,where,when","Advanced":"source,quality"}',
+    'indexed_location_type_ids' => '15,1370,2188',
+    'other_location_type_ids' => '2412',
     'redirect_on_success' => 'groups/invite',
     'message_after_save' => 1,
     'additional_css' => '',
@@ -509,7 +512,7 @@ panZoomBar',
 );
   $nodes[] = array(
   'uid' => 1,
-  'title' => 'Incoming records',
+  'title' => 'Incoming records chart',
   'log' => '',
   'status' => 1,
   'comment' => 1,
@@ -542,9 +545,8 @@ panZoomBar',
     'display_user_profile_location' => 0,
     'interface' => 'one_page',
     'structure' => '=Flow of input records=
-<p>This chart records coming into this over the last year with the green line showing the number of records input in that week that have since been verified, rejected or queried by verifiers. Click on the chart to view records for that week.</p>
-[dashboard_reports.records_by_week_chart]
-@linkToReportPath=explore/all-records',
+<p>This chart records coming into this over the last year with the green line showing the number of records input in that week that have since been verified, rejected or queried by verifiers.</p>
+[dashboard_reports.records_by_week_chart]',
     'param_presets' => '',
     'param_defaults' => 'idlist=
 searchArea=',
