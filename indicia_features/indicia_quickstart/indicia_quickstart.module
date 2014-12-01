@@ -8,8 +8,12 @@
  */
 function indicia_quickstart_block_info_alter(&$blocks, $theme, $code_blocks) {
   // hide navigation, login, search and powered by
-  $blocks['system']['navigation']['status'] = 0;  
-  $blocks['user']['login']['status'] = 0;
-  $blocks['system']['powered-by']['status'] = 0;  
-  $blocks['search']['form']['status'] = 0;
+  if (isset($blocks['system'])) {
+    $blocks['system']['navigation']['status'] = 0;
+    $blocks['system']['powered-by']['status'] = 0;  
+  }
+  if (isset($blocks['user']))
+    $blocks['user']['login']['status'] = 0;
+  if (isset($blocks['search']))
+    $blocks['search']['form']['status'] = 0;
 }
