@@ -400,7 +400,7 @@ function easy_login_submit_preferences($form, &$form_state) {
  * a comma separated list of readable item titles.
  */
 function _easy_login_get_user_field_as_list($table, $account, $userField, $titleField, $readAuth) {
-  $value = hostsite_get_user_field($userField, false, true);
+  $value = hostsite_get_user_field($userField, false, true, $account->uid);
   
   if (!$value)
     return '<strong>' . t('not specified') . '</strong>';
