@@ -65,27 +65,46 @@ function notification_emails_user_presave(&$edit, $account, $category) {
  * When the screen loads, always try to load the profile fields on the page from
  * the warehouse where possible.
  */
-function notification_emails_form_alter(&$form, &$form_state, $form_id) {
+function notification_emails_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
   global $_notification_emails_existing_data;
   $_notification_emails_existing_data = array();
+  iform_load_helpers(array('data_entry_helper'));
+  
+// Get the indicia_user_id for the user whose profile is being viewed.
+  $user_id = hostsite_get_user_field('indicia_user_id', FALSE, FALSE, $form_state['user']->uid);
 
-  if ($form_id === 'user_profile_form' && isset($form[t('account')])) {
-    iform_load_helpers(array('data_entry_helper'));
-    $user_id = hostsite_get_user_field('indicia_user_id');
-    $auth = data_entry_helper::get_read_write_auth(variable_get('indicia_website_id', ''), variable_get('indicia_password', ''));
-    // Get existing data from the warehouse for the user.
-    $freq_settings_data = data_entry_helper::get_population_data(array(
-      'table' => 'user_email_notification_setting',
-      'extraParams' => $auth['read'] + array('user_id' => $user_id),
-      'nocache' => TRUE,
-    ));
-    foreach ($freq_settings_data as $freq_settings_data_item) {
-      $_notification_emails_existing_data[$freq_settings_data_item['notification_source_type']] = array(
-        'id' => $freq_settings_data_item['id'],
-        'notification_frequency' => $freq_settings_data_item['notification_frequency'],
-      );
-    }
-    drupal_add_js("
+  // Create a container on the form to hold all notification form elements.
+  $form['email_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Email digest notification settings'),
+    '#weight' => 5,
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  if ($user_id === FALSE) {
+    // Early return with error message if no indicia_user_id
+    $form['email_fieldset']['error'] = array(
+      '#markup' => t('Notification settings cannot be retrieved as user '
+              . 'has no account on Indicia warehouse.'),
+    );
+    return;
+  }
+
+  $auth = data_entry_helper::get_read_write_auth(variable_get('indicia_website_id', ''), variable_get('indicia_password', ''));
+  // Get existing data from the warehouse for the user.
+  $freq_settings_data = data_entry_helper::get_population_data(array(
+    'table' => 'user_email_notification_setting',
+    'extraParams' => $auth['read'] + array('user_id' => $user_id),
+    'nocache' => TRUE,
+  ));
+  foreach ($freq_settings_data as $freq_settings_data_item) {
+    $_notification_emails_existing_data[$freq_settings_data_item['notification_source_type']] = array(
+      'id' => $freq_settings_data_item['id'],
+      'notification_frequency' => $freq_settings_data_item['notification_frequency'],
+    );
+  }
+  drupal_add_js("
 jQuery(document).ready(function($) {
   $('#edit-email-frequency').change(function() {
     $('#edit-email-comment-frequency,#edit-email-verification-frequency,#edit-email-milestone-frequency,#edit-email-verifier-task-frequency,#edit-email-pending-record-task-frequency').val($('#edit-email-frequency').val());
@@ -104,52 +123,44 @@ jQuery(document).ready(function($) {
     $('#edit-email-frequency').val(mixFound ? '-' : firstFound);
   });
 });", 'inline');
-    $form['email_fieldset'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Email digest notification settings'),
-      '#weight' => 5,
-      '#collapsible' => TRUE,
-      '#collapsed' => FALSE,
-    );
-    $form['email_fieldset']['email_frequency'] = array(
-      '#type' => 'select',
-      '#title' => t('Email digest frequency'),
-      '#description' => t('How often would you like to receive an email summarising your notifications?'),
-      '#options' => array(
-        '' => t('Never'),
-        'IH' => t('Hourly'),
-        'D' => t('Daily'),
-        'W' => t('Weekly'),
-        '-' => t('Use advanced settings below'),
-      ),
-    );
-    $form['email_fieldset']['advanced_email_fieldset']  = array(
-      '#type' => 'fieldset',
-      '#title' => t('Advanced notification settings'),
-      '#description' => t('Control email notification digest frequency separately for each type of notification'),
-      '#weight' => 2,
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-    );
-    $selects = array(
-      array('comment', 'comments on your records', 'C'),
-      array('record_cleaner', 'automated Record Cleaner record checks', 'A'),
-      array('verification', 'verification of your records', 'V'),
-      array('milestone', "milestones and awards you've achieved", 'M'),
-    );
-    if (user_access('verification')) {
-      $selects[] = array('verifier_task', "records for you to verify", 'VT');
-    }
-    if (user_access('mentoring') || user_access('moderator')) {
-      $selects[] = array('pending_record_task', "records for you to check", 'PT');
-    }
-    $form['email_fieldset']['advanced_email_fieldset'] = array_merge(
-        $form['email_fieldset']['advanced_email_fieldset'],
-        notification_emails_advanced_selects($selects, $overall_mode)
-    );
-    // Set overall email frequency based on values in advanced selects.
-    $form['email_fieldset']['email_frequency']['#default_value'] = $overall_mode;
+  $form['email_fieldset']['email_frequency'] = array(
+    '#type' => 'select',
+    '#title' => t('Email digest frequency'),
+    '#description' => t('How often would you like to receive an email summarising your notifications?'),
+    '#options' => array(
+      '' => t('Never'),
+      'IH' => t('Hourly'),
+      'D' => t('Daily'),
+      'W' => t('Weekly'),
+      '-' => t('Use advanced settings below'),
+    ),
+  );
+  $form['email_fieldset']['advanced_email_fieldset']  = array(
+    '#type' => 'fieldset',
+    '#title' => t('Advanced notification settings'),
+    '#description' => t('Control email notification digest frequency separately for each type of notification'),
+    '#weight' => 2,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $selects = array(
+    array('comment', 'comments on your records', 'C'),
+    array('record_cleaner', 'automated Record Cleaner record checks', 'A'),
+    array('verification', 'verification of your records', 'V'),
+    array('milestone', "milestones and awards you've achieved", 'M'),
+  );
+  if (user_access('verification')) {
+    $selects[] = array('verifier_task', "records for you to verify", 'VT');
   }
+  if (user_access('mentoring') || user_access('moderator')) {
+    $selects[] = array('pending_record_task', "records for you to check", 'PT');
+  }
+  $form['email_fieldset']['advanced_email_fieldset'] = array_merge(
+      $form['email_fieldset']['advanced_email_fieldset'],
+      notification_emails_advanced_selects($selects, $overall_mode)
+  );
+  // Set overall email frequency based on values in advanced selects.
+  $form['email_fieldset']['email_frequency']['#default_value'] = $overall_mode;
 }
 
 /**
