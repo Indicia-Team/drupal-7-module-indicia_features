@@ -334,15 +334,19 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
           array('!items' => _easy_login_get_user_field_as_list('taxon_group', $user, 'field_taxon_groups_expertise', 'title', $readAuth)));
       $verification_info[] = t('Your surveys for verification: !items.', 
           array('!items' => _easy_login_get_user_field_as_list('survey', $user, 'field_surveys_expertise', 'title', $readAuth)));
-      $form['verification_info'] = array('#value' => '<div class="form-item"><label>' . t('Verification settings') . '</label><ul><li>' .
+      $form['verification_info'] = array(
+        '#markup' => '<div class="form-item"><label>' . t('Verification settings') . '</label><ul><li>' .
           implode("</li>\n<li>", $verification_info) . '</li></ul>' . 
-          '<div class="description">' . t('If you want to change any of these settings, please contact the website administrator.') . '</div></div>');
+          '<div class="description">' . t('If you want to change any of these settings, please contact the website administrator.') . '</div></div>',
+      );
     }
     if (user_access('collate regional records', $thisUser) && !user_access('administer users')) {
-      $form['collation_info'] = array('#value' => '<div class="form-item"><label>' . t('Record collation settings') . '</label><ul><li>' .
+      $form['collation_info'] = array(
+        '#markup' => '<div class="form-item"><label>' . t('Record collation settings') . '</label><ul><li>' .
           t('Your locality for collation: !items.', 
           array('!items' => _easy_login_get_user_field_as_list('location', $user, 'field_location_collation', 'name', $readAuth))) . '</ul></li>' . 
-          '<div class="description">' . t('If you want to change this setting, please contact the website administrator.') . '</div></div>');
+          '<div class="description">' . t('If you want to change this setting, please contact the website administrator.') . '</div></div>'
+      );
       if (isset($form['field_location_collation'])) {
         $form['field_location_collation']['#attributes'] = array('disabled' => 'true');
         $form['field_location_collation']['#description'] = t('If you want to change this setting, please contact the website administrator.');
