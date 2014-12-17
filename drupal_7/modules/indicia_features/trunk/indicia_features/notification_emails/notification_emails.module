@@ -56,7 +56,7 @@ function notification_emails_user_login(&$edit, $account) {
  */
 function notification_emails_user_presave(&$edit, $account, $category) {
   // On save update the warehouse so the profile is synced with warehouse.
-  create_notification_emails_settings_submission($edit);
+  create_notification_emails_settings_submission($edit, $account);
 }
 
 /**
@@ -229,9 +229,11 @@ function notification_emails_advanced_selects($selects, &$overall_mode) {
 /**
  * Create data structure to submit to warehouse when user saves.
  */
-function create_notification_emails_settings_submission($edit) {
+function create_notification_emails_settings_submission($edit, $account = FALSE) {
   global $_notification_emails_existing_data;
   $auth = data_entry_helper::get_read_write_auth(variable_get('indicia_website_id', ''), variable_get('indicia_password', ''));
+  $user_id = hostsite_get_user_field('indicia_user_id', FALSE, FALSE, $account ? $account->uid : FALSE);
+
   $submission['id'] = 'user_email_notification_setting';
   $submission['submission_list']['entries'] = array();
   foreach ($edit as $fieldname => $value) {
@@ -273,9 +275,9 @@ function create_notification_emails_settings_submission($edit) {
       continue;
     }
     // If the drop-down is set to blank, and it is a new item rather than a
-    // drop-down the user has changed to being being from an existing selection,
+    // drop-down the user has changed to being blank from an existing selection,
     // then we can ignore this code as we don't need to take any action.
-    if (!($edit[$fieldname] === '' && empty($_notification_emails_existing_data[$source_type]))) {
+    if (!($value === '' && empty($_notification_emails_existing_data[$source_type]))) {
       $data = array(
         'id' => 'user_email_notification_setting',
         'fields' => array(),
@@ -285,15 +287,15 @@ function create_notification_emails_settings_submission($edit) {
       }
       // For existing records that are then set to blank, we can delete the
       // user_email_notification_setting.
-      if ($edit[$fieldname] === '') {
+      if ($value === '') {
         $data['fields']['deleted'] = array('value' => 't');
       }
       else {
-        $data['fields']['user_id'] = array('value' => hostsite_get_user_field('indicia_user_id'));
+        $data['fields']['user_id'] = array('value' => $user_id);
         $data['fields']['notification_source_type'] = array('value' => $source_type);
         // The source frequency to use is simply the value from the select
         // drop-down, so grab from post for the fieldname.
-        $data['fields']['notification_frequency'] = array('value' => $edit[$fieldname]);
+        $data['fields']['notification_frequency'] = array('value' => $value);
       }
       $submission['submission_list']['entries'][] = $data;
       // Set the data holder to empty once we have given it to the submissions
