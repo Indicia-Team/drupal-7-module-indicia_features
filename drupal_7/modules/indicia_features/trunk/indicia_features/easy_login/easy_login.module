@@ -140,11 +140,11 @@ function easy_login_synchronise_account_to_warehouse(&$edit, $account, $needToPr
     $fieldsToSync = array();
     foreach ($edit as $field=>$def) {
       if (preg_match('/^field_indicia_/', $field) && $field!=='field_indicia_user_id') {
-        $value = $def['und'][0]['value'];
+        $value = $def[LANGUAGE_NONE][0]['value'];
         // fields that are available for synchronisation must be called field_indicia_*. We
         // also don't want to handle anything that has not actually changed.
         $userField = $existingUser->$field;
-        if ($value !== $userField['und'][0]['value']) {
+        if ($value !== $userField[LANGUAGE_NONE][0]['value']) {
           $fieldsToSync[$field] = $value;
         }
       }
@@ -165,9 +165,9 @@ function easy_login_synchronise_account_to_warehouse(&$edit, $account, $needToPr
       // hidden these fields if they feel they are not relevant to the site.
       $requests = array();
       // $account->field_taxon_groups etc contains something if the field exist
-      if (isset($account->field_location) && empty($edit['field_location']['und']))
+      if (isset($account->field_location) && empty($edit['field_location'][LANGUAGE_NONE]))
         $requests[] = t('the area you would most often like to record in');
-      if (isset($account->field_taxon_groups) && empty($edit['field_taxon_groups']['und']))
+      if (isset($account->field_taxon_groups) && empty($edit['field_taxon_groups'][LANGUAGE_NONE]))
         $requests[] = t('the list of species groups you are particularly interested in');
       if (!empty($requests))
         drupal_set_message(t('Why not tell us !requests to help us tailor the system to your needs? '.
@@ -240,7 +240,7 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
     if (isset($form['field_location']))
       $lang = $form['field_location']['#language'];
     else 
-      $lang = 'und'; // default undefined
+      $lang = LANGUAGE_NONE; // default undefined
     // Hide warehouse link and remembered field mappings unless admin
     if (!user_access('administer users')) {
       unset($form['field_indicia_user_id']);
@@ -322,7 +322,6 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
         )),
         '#type'=>'markup'
       );
-      $form['#validate'][] = 'easy_login_submit_preferences';
     }
     // If the user is a verifier but the person editing the account has no rights to change the settings, then add read only descriptions
     // of verification settings. We'll remove the actual fields in a moment.
@@ -364,6 +363,8 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
       $form['field_location_collation']['#access'] = FALSE;
     }
     drupal_add_css(drupal_get_path('module','iform').'/media/css/default_site.css');
+    drupal_add_js(drupal_get_path('module', 'easy_login').'/easy_login_form.js');
+    $form['#validate'][] = 'easy_login_submit_preferences';
     handle_resources();
   }
 }
@@ -390,11 +391,26 @@ function easy_login_get_locations($readAuth, $typeVarName) {
  * the sub_list data into the correct format for Drupal to save it.
  */
 function easy_login_submit_preferences($form, &$form_state) {
+  if ($form_state['values']['field_u16'][LANGUAGE_NONE][0]['value']===0)
+    unset($form_state['values']['field_dob']);
+  else {
+    $dob=$form_state['values']['field_dob'][LANGUAGE_NONE][0]['value'];
+    if (empty($dob)) {
+      form_set_error('field_dob', t('Please provide your date of birth since you are under 16 years old.'));
+    } else {
+      $now = time();
+      $inputDate=strtotime("$dob");
+      if ($inputDate>$now)
+        form_set_error('field_dob', t('The date of birth has to be in the past.'));
+      elseif ($inputDate<strtotime('-16 years', $now))
+        form_set_error('field_dob', t('You\'ve ticked the Under 16 box, but your birth date indicates you are over 16. Please correct.'));  
+    }
+  }
   if (isset($_POST['field_surveys_expertise'])) {
     $dataToSave=array();
     foreach($_POST['field_surveys_expertise'] as $value)
       $dataToSave[] = array('value'=>$value);
-    $form_state['values']['field_surveys_expertise']['und']=$dataToSave;
+    $form_state['values']['field_surveys_expertise'][LANGUAGE_NONE]=$dataToSave;
   }
   else
     unset($form_state['values']['field_surveys_expertise']);
@@ -441,13 +457,13 @@ function easy_login_call_get_user_id($account, $force=null, $users_to_merge=null
   $url .= '?nonce='.$auth['write_tokens']['nonce'].'&auth_token='.$auth['write_tokens']['auth_token'];
   if ($needToProcessExistingRecords)
     $url .= '&cms_user_id='.$account->uid;
-  $postargs = 'surname='.urlencode($account->field_last_name['und'][0]['value']).'&identifiers='.$identifiers;
-  if (!empty($account->field_indicia_user_id['und'][0]['value']))
-    $postargs .= '&warehouse_user_id=' . $account->field_indicia_user_id['und'][0]['value'];
+  $postargs = 'surname='.urlencode($account->field_last_name[LANGUAGE_NONE][0]['value']).'&identifiers='.$identifiers;
+  if (!empty($account->field_indicia_user_id[LANGUAGE_NONE][0]['value']))
+    $postargs .= '&warehouse_user_id=' . $account->field_indicia_user_id[LANGUAGE_NONE][0]['value'];
   if (count($fieldsToSyncByCaption))
     $postargs .= '&attribute_values='.urlencode(json_encode($fieldsToSyncByCaption));
-  if (!empty($account->field_first_name['und'][0]['value']))
-    $postargs .= '&first_name='.urlencode($account->field_first_name['und'][0]['value']);
+  if (!empty($account->field_first_name[LANGUAGE_NONE][0]['value']))
+    $postargs .= '&first_name='.urlencode($account->field_first_name[LANGUAGE_NONE][0]['value']);
   if ($force && ($force==='merge' || $force==='split')) {
     $postargs .= '&force='.$force;
     // We are definitely doing something on the server, so can inform the user
@@ -474,12 +490,12 @@ function easy_login_handle_get_user_id_response($account, $response) {
     if ($account->field_indicia_user_id!=$response->userId) {
       if ($account->uid===$user->uid) {
         // no need for these messages during registration
-        if (empty($account->field_indicia_user_id) || empty($account->field_indicia_user_id['und']))
+        if (empty($account->field_indicia_user_id) || empty($account->field_indicia_user_id[LANGUAGE_NONE]))
           drupal_set_message(t('Your user account is now linked to the central records database.'));
         else
           drupal_set_message(t('Your user account link to the central records database has been updated.'));
       }
-      $account->field_indicia_user_id['und'][0]['value'] = $response->userId;
+      $account->field_indicia_user_id[LANGUAGE_NONE][0]['value'] = $response->userId;
       $info = field_info_field('field_indicia_user_id');
       $fields = array($info['id']);
       //Execute the storage function

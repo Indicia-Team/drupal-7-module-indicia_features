@@ -10,6 +10,55 @@
 function easy_login_field_default_field_instances() {
   $field_instances = array();
 
+  // Exported field_instance: 'user-user-field_dob'
+  $field_instances['user-user-field_dob'] = array(
+    'bundle' => 'user',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 14,
+      ),
+    ),
+    'entity_type' => 'user',
+    'field_name' => 'field_dob',
+    'label' => 'Date of birth',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'strtotime',
+      'default_value2' => 'same',
+      'default_value_code' => '-16 years',
+      'default_value_code2' => '',
+      'user_register_form' => 1,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 1,
+        'text_parts' => array(),
+        'year_range' => '-17:+0',
+      ),
+      'type' => 'date_popup',
+      'weight' => 54,
+    ),
+  );
+
   // Exported field_instance: 'user-user-field_first_name'
   $field_instances['user-user-field_first_name'] = array(
     'bundle' => 'user',
@@ -274,10 +323,48 @@ function easy_login_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'user-user-field_u16'
+  $field_instances['user-user-field_u16'] = array(
+    'bundle' => 'user',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => 'Tick if you are under 16 years old?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 13,
+      ),
+    ),
+    'entity_type' => 'user',
+    'field_name' => 'field_u16',
+    'label' => 'Under 16',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => 1,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 7,
+    ),
+  );
+
   // Translatables
   // Included for use with string extractors like potx.
   t('Area your expertise applies in if relevant, e.g. the county you are a county recorder for. If left blank then verification access is given for all locations.
 ');
+  t('Date of birth');
   t('First name');
   t('If considered an expert in one or more species groups (e.g. if a county recorder) select them here. If left blank then all species will be available for verification.');
   t('If expertise is restricted to one or more surveys, select them here. If left blank then any survey\'s data can be verified.');
@@ -290,6 +377,8 @@ function easy_login_field_default_field_instances() {
   t('Species groups');
   t('Species groups you have expertise in');
   t('Surveys you are an expert for');
+  t('Tick if you are under 16 years old?');
+  t('Under 16');
   t('User ID for this account on the warehouse');
   t('User\'s first name');
   t('User\'s last name');
