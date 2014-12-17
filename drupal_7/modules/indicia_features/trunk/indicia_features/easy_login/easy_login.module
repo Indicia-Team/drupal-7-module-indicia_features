@@ -339,6 +339,7 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
           implode("</li>\n<li>", $verification_info) . '</li></ul>' . 
           '<div class="description">' . t('If you want to change any of these settings, please contact the website administrator.') . '</div></div>',
       );
+      $form['#group_children']['verification_info'] = 'group_verification';
     }
     if (user_access('collate regional records', $thisUser) && !user_access('administer users')) {
       $form['collation_info'] = array(
