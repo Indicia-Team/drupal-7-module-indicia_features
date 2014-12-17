@@ -106,17 +106,28 @@ function notification_emails_form_user_profile_form_alter(&$form, &$form_state, 
   }
   drupal_add_js("
 jQuery(document).ready(function($) {
+  var \$advancedSelects = $('#edit-email-comment-frequency, ' +
+                            '#edit-email-record-cleaner-frequency, ' +
+                            '#edit-email-verification-frequency, ' +
+                            '#edit-email-milestone-frequency, ' +
+                            '#edit-email-verifier-task-frequency, ' +
+                            '#edit-email-pending-record-task-frequency');
+  
   $('#edit-email-frequency').change(function() {
-    $('#edit-email-comment-frequency,#edit-email-verification-frequency,#edit-email-milestone-frequency,#edit-email-verifier-task-frequency,#edit-email-pending-record-task-frequency').val($('#edit-email-frequency').val());
+    // Change advanced settings to match overall setting.
+    \$advancedSelects.val($('#edit-email-frequency').val());
   });
-  $('#edit-email-comment-frequency,#edit-email-verification-frequency,#edit-email-milestone-frequency,#edit-email-verifier-task-frequency,#edit-email-pending-record-task-frequency').change(function() {
-    var firstFound=false, mixFound = false;
-    $.each($('#edit-email-comment-frequency,#edit-email-verification-frequency,#edit-email-milestone-frequency,#edit-email-verifier-task-frequency,#edit-email-pending-record-task-frequency'), function() {
-      if (!firstFound) {
+  \$advancedSelects.change(function() {
+    // Change overall setting to match advanced settings.
+    var firstFound = false, mixFound = false;
+    \$advancedSelects.each(function() {
+      if (firstFound === false) {
         firstFound = $(this).val();
       }
-      if (firstFound!==$(this).val()) {
-        mixFound=true;
+      if (firstFound !== $(this).val()) {
+        mixFound = true;
+        // Break out of each loop.
+        return false;
       }
     });
     // set the basic select to match the advanced options
