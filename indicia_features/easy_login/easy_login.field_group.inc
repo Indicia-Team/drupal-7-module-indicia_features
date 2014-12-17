@@ -136,6 +136,8 @@ function easy_login_field_group_info() {
     'children' => array(
       0 => 'field_first_name',
       1 => 'field_last_name',
+      2 => 'field_u16',
+      3 => 'field_dob',
     ),
     'format_type' => 'tab',
     'format_settings' => array(
