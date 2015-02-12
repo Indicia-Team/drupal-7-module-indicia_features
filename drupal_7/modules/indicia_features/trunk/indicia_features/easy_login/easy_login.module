@@ -154,7 +154,7 @@ function easy_login_synchronise_account_to_warehouse(&$edit, $account, $needToPr
       // Indicia requires fields to match on the caption, so we need to query the captions and
       // convert the array.
       $r = db_query("select data, field_name from {field_config_instance} where field_name in (:ids) and entity_type='user'", 
-          array(':ids' => implode("','", array_keys($fieldsToSync))));
+          array(':ids' => array_keys($fieldsToSync)));
       foreach($r as $row) {
         $blob = unserialize($row->data);
         $fieldsToSyncByCaption[$blob['label']]=$fieldsToSync[$row->field_name];
