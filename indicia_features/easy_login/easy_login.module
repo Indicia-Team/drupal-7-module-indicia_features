@@ -487,10 +487,11 @@ function easy_login_handle_get_user_id_response($account, $response) {
   $response = json_decode($response);
   global $user;
   if (isset($response->userId)) {
-    if ($account->field_indicia_user_id['und'][0]['value'] != $response->userId) {
+    $isEmpty = empty($account->field_indicia_user_id) || empty($account->field_indicia_user_id[LANGUAGE_NONE]);
+    if ($isEmpty || $account->field_indicia_user_id['und'][0]['value'] != $response->userId) {
       if ($account->uid === $user->uid) {
         // no need for these messages during registration
-        if (empty($account->field_indicia_user_id) || empty($account->field_indicia_user_id[LANGUAGE_NONE]))
+        if ($isEmpty)
           drupal_set_message(t('Your user account is now linked to the central records database.'));
         else
           drupal_set_message(t('Your user account link to the central records database has been updated.'));
