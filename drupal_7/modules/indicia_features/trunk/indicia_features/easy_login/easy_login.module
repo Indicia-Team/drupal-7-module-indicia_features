@@ -539,7 +539,6 @@ function easy_login_submit_preferences($form, &$form_state) {
   if (!empty($_POST['alerts'])) {
     $auth = data_entry_helper::get_read_write_auth(variable_get('indicia_website_id', ''), variable_get('indicia_password', ''));
     // some species alert unsubscription requests have been posted. Let's remove them.
-    drupal_set_message(print_r($_POST['alerts'], true));
     $countDone = 0;
     foreach ($_POST['alerts'] as $idx => $id) {
       $s = data_entry_helper::build_submission(array(
@@ -549,9 +548,7 @@ function easy_login_submit_preferences($form, &$form_state) {
       ), array('model' => 'species_alert'));
       $countDone++;
       $auth['write_tokens']['persist_auth'] = $countDone < count($_POST['alerts']);
-      drupal_set_message(print_r($auth, true));
       $r = data_entry_helper::forward_post_to('species_alert', $s, $auth['write_tokens']);
-      drupal_set_message(print_r($r, true));
     }
   }
 }
