@@ -76,8 +76,10 @@ function resolve_multiple_users_form_submit($form, &$form_state) {
 /**
  * Implement hook_user_view.
  * Tidies up the view tab of a user account.
+ * @param object $account User account
+ * @throws \exception
  */
-function easy_login_user_view($account, $view_mode, $langcode) {
+function easy_login_user_view($account) {
   iform_load_helpers(array('data_entry_helper'));
   $readAuth=data_entry_helper::get_read_auth(variable_get('indicia_website_id',''), variable_get('indicia_password',''));
   _easy_login_set_view_account_for_table('location', 'name', $account, 'field_location', $readAuth, 
@@ -112,6 +114,7 @@ function easy_login_user_view($account, $view_mode, $langcode) {
   }
   if (!user_access('administer users'))
     unset($account->content['field_indicia_user_id']);
+  _show_user_species_alerts($account, $readAuth);
 }
 
 function easy_login_user_login(&$edit, $account) {
@@ -186,6 +189,8 @@ function easy_login_synchronise_account_to_warehouse(&$edit, $account, $needToPr
 
 /**
  * Overwrites the content of the account object with any updates from the posted form. Does not save to the db.
+ * @param array $edit Form edit data
+ * @param array $account User account
  */
 function easy_login_move_form_data_into_account($edit, &$account) {
   foreach ($edit as $key=>$data) {
@@ -195,9 +200,13 @@ function easy_login_move_form_data_into_account($edit, &$account) {
 }
 
 /**
- * Implements hook_user_update
+ * Implements hook_user_update. Synchronises user fields to matching custom attributes on the
+ * Indicia warehouse.
+ * @param array $edit Form edit data
+ * @param array $account User account
+ * @param $category
  */
-function easy_login_user_update(&$edit, $account, $category) {
+function easy_login_user_update(&$edit, $account) {
   easy_login_synchronise_account_to_warehouse($edit, $account, false);
 }
 
@@ -223,6 +232,92 @@ function _easy_login_set_view_account_for_table($table, $titleField, &$account, 
     );
     unset($account->content[$userField]);
   }
+}
+
+/**
+ * Adds a user's species alert subscriptions to the view page of their user account
+ * @param $account
+ * @param $readAuth
+ */
+function _show_user_species_alerts($account, $readAuth) {
+  $list = _easy_login_get_alerts($readAuth, hostsite_get_user_field('indicia_user_id', 0, false, $account->uid));
+  if (count($list)) {
+    $markup = '<ul><li>' . implode('</li><li>', $list) . '</li></ul>';
+    $account->content['Species alerts'] = array(
+      '#type' => 'user_profile_category',
+      '#title' => t('Species alerts'),
+      '#weight' => 50
+    );
+    $account->content['Species alerts']['alerts'] = array(
+      '#markup' => $markup,
+      '#title' => '',
+      '#type' => 'markup'
+    );
+  }
+}
+
+/**
+ * Retrieve the user's species alert subscriptions from othw warehouse.
+ * @param $readAuth
+ * @param $indicia_user_id
+ * @return array
+ */
+function _easy_login_get_alerts($readAuth, $indicia_user_id) {
+  try {
+    $alerts = data_entry_helper::get_population_data(array(
+      'table' => 'species_alert',
+      'extraParams' => $readAuth + array(
+          'view' => 'detail',
+          'user_id' => $indicia_user_id
+        ),
+      'caching' => FALSE
+    ));
+  } catch (Exception $e) {
+    // most likely because the species_alerts module is not enabled on the warehouse, so we can ignore them
+    return array();
+  }
+  $list = array();
+  if (count($alerts)) {
+    foreach ($alerts as $alert) {
+      if ($alert['alert_on_entry'] === 't' & $alert['alert_on_verify'] === 't') {
+        $action = 'entry or verification as correct';
+      }
+      elseif ($alert['alert_on_entry'] === 't') {
+        $action = 'entry';
+      }
+      elseif ($alert['alert_on_verify'] === 't') {
+        $action = 'verification as correct';
+      }
+      else {
+        // skip this notification as it doesn't do anything
+        continue;
+      }
+      $what = '';
+      if (!empty($alert['taxon_list_title'])) {
+        $what = t('a species in the @list', array('@list' => $alert['taxon_list_title']));
+      }
+      elseif (!empty($alert['preferred_taxon'])) {
+        $what = "<em>$alert[preferred_taxon]</em>";
+        if (!empty($alert['default_common_name'])) {
+          $what .= " ($alert[default_common_name])";
+        }
+      }
+      if (!empty($alert['location_name'])) {
+        if (empty($what)) {
+          $what = t('record');
+        }
+        else {
+          $what = "<strong>$what</strong>";
+        }
+        $what .= t(' at site !site', array('!site' => "<strong>$alert[location_name]</strong>"));
+      }
+      $list[$alert['id']] = t('Notified on @action of !what', array(
+        '@action' => $action,
+        '!what' => $what
+      ));
+    }
+  }
+  return $list;
 }
 
 /**
@@ -362,6 +457,31 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
     if (!user_access('collate regional records', $thisUser) || !user_access('administer users')) {
       $form['field_location_collation']['#access'] = FALSE;
     }
+    if ($form_id === 'user_profile_form') {
+      $alerts = _easy_login_get_alerts($readAuth, hostsite_get_user_field('indicia_user_id', 0, false, $thisUser->uid));
+      if (count($alerts)) {
+        // Add checkboxes to the user account edit page so the user can tick to delete the ones they don't want.
+        /**
+         * Following could be added to enable edit links, but would require a way of configuring the correct path
+         * to a form for editing species alerts.
+         *
+        foreach ($alerts as $id => &$title) {
+          $title .= " <a href=\"?q=node/..&id=$id\">edit</a>";
+        }*/
+        $form['species_alerts']=array(
+          '#type' => 'fieldset',
+          '#title' => t('Species alerts'),
+          '#weight' => 50
+        );
+        $form['species_alerts']['alerts'] = array(
+          '#type'=>'checkboxes',
+          '#options' => $alerts,
+          '#title' => t('Alerts you have subscribed to'),
+          '#description' => t('If you want to unsubscribe from any of these alerts, then tick the box next to the alert ' .
+              'before saving your user account.')
+        );
+      }
+    }
     drupal_add_css(drupal_get_path('module','iform').'/media/css/default_site.css');
     drupal_add_js(drupal_get_path('module', 'easy_login').'/easy_login_form.js');
     $form['#validate'][] = 'easy_login_submit_preferences';
@@ -387,8 +507,10 @@ function easy_login_get_locations($readAuth, $typeVarName) {
 }
 
 /**
- * Our sub_list control does not automatically submit, so use the validate hook to reformat
- * the sub_list data into the correct format for Drupal to save it.
+ * Handle additional tasks on submission of the user account form. Our sub_list control
+ * does not automatically submit, so use the validate hook to reformat the sub_list data
+ * into the correct format for Drupal to save it.
+ * Also sync any requests to unsubscribe an email alert to the warehouse.
  */
 function easy_login_submit_preferences($form, &$form_state) {
   if ($form_state['values']['field_u16'][LANGUAGE_NONE][0]['value']===0)
@@ -414,6 +536,24 @@ function easy_login_submit_preferences($form, &$form_state) {
   }
   else
     unset($form_state['values']['field_surveys_expertise']);
+  if (!empty($_POST['alerts'])) {
+    $auth = data_entry_helper::get_read_write_auth(variable_get('indicia_website_id', ''), variable_get('indicia_password', ''));
+    // some species alert unsubscription requests have been posted. Let's remove them.
+    drupal_set_message(print_r($_POST['alerts'], true));
+    $countDone = 0;
+    foreach ($_POST['alerts'] as $idx => $id) {
+      $s = data_entry_helper::build_submission(array(
+        'website_id' => variable_get('indicia_website_id', ''),
+        'species_alert:id' => $id,
+        'species_alert:deleted' => 't'
+      ), array('model' => 'species_alert'));
+      $countDone++;
+      $auth['write_tokens']['persist_auth'] = $countDone < count($_POST['alerts']);
+      drupal_set_message(print_r($auth, true));
+      $r = data_entry_helper::forward_post_to('species_alert', $s, $auth['write_tokens']);
+      drupal_set_message(print_r($r, true));
+    }
+  }
 }
 
 /**
@@ -480,7 +620,7 @@ function easy_login_call_get_user_id($account, $force=null, $users_to_merge=null
 
 /**
  * Handle the response from a call to get_user_id on the warehouse services.
- * @param type $account User object to save to
+ * @param object $account User object to save to
  * @param string $response Response from call to get_user_id (should be a json string).
  */
 function easy_login_handle_get_user_id_response($account, $response) {
