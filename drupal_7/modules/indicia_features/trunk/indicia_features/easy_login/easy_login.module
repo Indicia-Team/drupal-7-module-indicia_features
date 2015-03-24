@@ -400,7 +400,11 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
         // convert result array to correct format for sub_list control
         $surveys = array();
         foreach($result as $row)
-          $surveys[$row['id']]=$row['title'];
+          $surveys[] = array(
+              'caption' => $row['title'],
+              'default' => $row['id'],
+              'fieldname' => 'field_surveys_expertise[]'
+          );
       }
       $form['field_surveys_expertise'][$lang] = array(
         '#markup' => data_entry_helper::sub_list(array(
