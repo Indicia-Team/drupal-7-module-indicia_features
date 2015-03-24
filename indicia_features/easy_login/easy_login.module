@@ -276,6 +276,13 @@ function _easy_login_get_alerts($readAuth, $indicia_user_id) {
     // most likely because the species_alerts module is not enabled on the warehouse, so we can ignore them
     return array();
   }
+  if(array_key_exists('error', $alerts)) {
+    // Most likely because the species_alerts module is not enabled on the 
+    // warehouse, so we can ignore alerts. However, you can still expect a nasty
+    // looking error because http_post gets an internal server error 500 from
+    // the warehouse which is echoed to the output.
+    return array();
+  }
   $list = array();
   if (count($alerts)) {
     foreach ($alerts as $alert) {
