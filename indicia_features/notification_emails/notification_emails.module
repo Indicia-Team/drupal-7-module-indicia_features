@@ -47,13 +47,13 @@ function notification_emails_user_login(&$edit, $account) {
   ));
 
   if (empty($freq_settings_data)) {
-    _notification_emails_set_default_frequency($submissionForNewUser, 'species_alert', 'S', 'IH');
-    _notification_emails_set_default_frequency($submissionForNewUser, 'comment', 'C', 'D');
-    _notification_emails_set_default_frequency($submissionForNewUser, 'record_cleaner', 'A', 'D');
-    _notification_emails_set_default_frequency($submissionForNewUser, 'verification', 'V', 'D');
-    _notification_emails_set_default_frequency($submissionForNewUser, 'milestone', 'M', 'D');
-    _notification_emails_set_default_frequency($submissionForNewUser, 'verifier_task', 'VT', 'D');
-    _notification_emails_set_default_frequency($submissionForNewUser, 'pending_record_task', 'PT', 'D');
+    _notification_emails_set_default_frequency($submission_for_new_user, 'species_alert', 'S', 'IH');
+    _notification_emails_set_default_frequency($submission_for_new_user, 'comment', 'C', 'D');
+    _notification_emails_set_default_frequency($submission_for_new_user, 'record_cleaner', 'A', 'D');
+    _notification_emails_set_default_frequency($submission_for_new_user, 'verification', 'V', 'D');
+    _notification_emails_set_default_frequency($submission_for_new_user, 'milestone', 'M', 'D');
+    _notification_emails_set_default_frequency($submission_for_new_user, 'verifier_task', 'VT', 'D');
+    _notification_emails_set_default_frequency($submission_for_new_user, 'pending_record_task', 'PT', 'D');
     // Update the warehouse.
     create_notification_emails_settings_submission($submission_for_new_user);
     drupal_set_message(t('Your account has been configured so that you will receive email updates about your notifications, including verification of records, comments and the results of automated checks on your records. You can change this behaviour in the <strong>Email digest notification settings</strong> of your !link.',
