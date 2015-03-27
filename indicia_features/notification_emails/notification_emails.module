@@ -56,8 +56,8 @@ function notification_emails_user_login(&$edit, $account) {
     _notification_emails_set_default_frequency($submissionForNewUser, 'pending_record_task', 'PT', 'D');
     // Update the warehouse.
     create_notification_emails_settings_submission($submission_for_new_user);
-    drupal_set_message(t('Your account has been configured so that you will receive email updates about your notifications, including verification of records, comments and the results of automated checks on your records. You can change this behaviour under @my-account on the Edit page under the <strong>Email digest notification settings</strong> setting.'),
-            array('@my-account' => l(t('My account'), 'my-account')));
+    drupal_set_message(t('Your account has been configured so that you will receive email updates about your notifications, including verification of records, comments and the results of automated checks on your records. You can change this behaviour in the <strong>Email digest notification settings</strong> of your !link.',
+            array('!link' => l(t('user preferences'), 'user/'.$account->uid.'/edit'))));
   }
 }
 
