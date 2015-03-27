@@ -65,8 +65,16 @@ function notification_emails_user_login(&$edit, $account) {
  * Implements hook_user_presave().
  */
 function notification_emails_user_presave(&$edit, $account, $category) {
-  // On save update the warehouse so the profile is synced with warehouse.
-  create_notification_emails_settings_submission($edit, $account);
+  // When a user first registers through the website this function is called
+  // with $account->uid = 0
+  // When a user registers through a mobile app this function is called with
+  // $account->is_new = true.
+   
+  // If $account->uid exists and is > 0 then update the warehouse so it is in
+  // sync with the settings in Drupal
+  if(isset($account->uid) && $account->uid > 0) {
+    create_notification_emails_settings_submission($edit, $account);
+  }
 }
 
 /**
