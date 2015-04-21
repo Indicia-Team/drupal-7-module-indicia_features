@@ -29,8 +29,7 @@ function local_recording_groups_uuid_features_default_content() {
     'permission_name' => 'online recording',
     'report_name' => 'library/groups/groups_list',
     'param_presets' => 'currentUser={profile_indicia_user_id}
-userFilterMode=allvisible
-pending_path={rootFolder}?q=groups/pending&group_id=',
+userFilterMode=allvisible',
     'param_defaults' => '',
     'param_ignores' => '',
     'items_per_page' => 20,
@@ -208,7 +207,17 @@ You can also create your own local recording group by clicking the <strong>Creat
   'needs_review' => 3,
   'available_for_groups' => 0,
   'limit_to_group_id' => NULL,
-  'body' => array(),
+  'body' => array(
+    'und' => array(
+      0 => array(
+        'value' => '',
+        'summary' => NULL,
+        'format' => 'filtered_html',
+        'safe_value' => '',
+        'safe_summary' => '',
+      ),
+    ),
+  ),
   'rdf_mapping' => array(
     'rdftype' => array(
       0 => 'sioc:Item',
@@ -287,21 +296,33 @@ You can also create your own local recording group by clicking the <strong>Creat
   'params' => array(
     'view_access_control' => 1,
     'permission_name' => 'online recording',
-    'group_type' => 3252,
+    'group_type' => array(
+      0 => 3254,
+    ),
     'parent_group_relationship_type' => '',
     'join_methods' => 'P=Anyone can join without needing approval
 R=Anyone can request membership but administrator must approve
 I=Membership by invite only',
     'include_code' => 0,
     'include_dates' => 0,
+    'include_sensitivity_controls' => 1,
     'include_report_filter' => 1,
+    'include_linked_pages' => 1,
     'include_private_records' => 0,
     'include_administrators' => 1,
     'include_members' => 0,
     'data_inclusion_mode' => 'choose',
     'filter_types' => '{"":"what,where,when","Advanced":"source,quality"}',
-    'indexed_location_type_ids' => '15,1370,2188',
-    'other_location_type_ids' => '2412',
+    'indexed_location_type_ids' => '',
+    'other_location_type_ids' => '',
+    'default_linked_pages' => '[
+  {
+    "path":"groups/summary",
+    "caption":"Summary page",
+    "administrator":true
+  }
+]',
+    'groups_page_path' => '',
     'redirect_on_success' => 'groups/invite',
     'message_after_save' => 1,
     'additional_css' => '',
@@ -512,7 +533,7 @@ panZoomBar',
 );
   $nodes[] = array(
   'uid' => 1,
-  'title' => 'Incoming records chart',
+  'title' => 'Incoming records',
   'log' => '',
   'status' => 1,
   'comment' => 1,
@@ -545,8 +566,9 @@ panZoomBar',
     'display_user_profile_location' => 0,
     'interface' => 'one_page',
     'structure' => '=Flow of input records=
-<p>This chart records coming into this over the last year with the green line showing the number of records input in that week that have since been verified, rejected or queried by verifiers.</p>
-[dashboard_reports.records_by_week_chart]',
+<p>This chart records coming into this over the last year with the green line showing the number of records input in that week that have since been verified, rejected or queried by verifiers. Click on the chart to view records for that week.</p>
+[dashboard_reports.records_by_week_chart]
+@linkToReportPath=groups/explore?filter-date_age=&filter-date_from=#weekdate#&filter-date_to=#weekenddate#',
     'param_presets' => '',
     'param_defaults' => 'idlist=
 searchArea=',
@@ -556,6 +578,7 @@ searchArea=',
 ]',
     'high_volume' => 0,
     'sharing' => 'reporting',
+    'hide_standard_param_filter' => 0,
     'redirect_on_success' => '',
     'message_after_save' => 0,
     'additional_css' => '',
@@ -576,94 +599,6 @@ searchArea=',
       ),
     ),
   ),
-  'rdf_mapping' => array(
-    'rdftype' => array(
-      0 => 'sioc:Item',
-      1 => 'foaf:Document',
-    ),
-    'title' => array(
-      'predicates' => array(
-        0 => 'dc:title',
-      ),
-    ),
-    'created' => array(
-      'predicates' => array(
-        0 => 'dc:date',
-        1 => 'dc:created',
-      ),
-      'datatype' => 'xsd:dateTime',
-      'callback' => 'date_iso8601',
-    ),
-    'changed' => array(
-      'predicates' => array(
-        0 => 'dc:modified',
-      ),
-      'datatype' => 'xsd:dateTime',
-      'callback' => 'date_iso8601',
-    ),
-    'body' => array(
-      'predicates' => array(
-        0 => 'content:encoded',
-      ),
-    ),
-    'uid' => array(
-      'predicates' => array(
-        0 => 'sioc:has_creator',
-      ),
-      'type' => 'rel',
-    ),
-    'name' => array(
-      'predicates' => array(
-        0 => 'foaf:name',
-      ),
-    ),
-    'comment_count' => array(
-      'predicates' => array(
-        0 => 'sioc:num_replies',
-      ),
-      'datatype' => 'xsd:integer',
-    ),
-    'last_activity' => array(
-      'predicates' => array(
-        0 => 'sioc:last_activity_date',
-      ),
-      'datatype' => 'xsd:dateTime',
-      'callback' => 'date_iso8601',
-    ),
-  ),
-  'cid' => 0,
-  'last_comment_uid' => 1,
-  'name' => 'admin',
-  'picture' => 0,
-  'data' => 'a:6:{s:16:"ckeditor_default";s:1:"t";s:20:"ckeditor_show_toggle";s:1:"t";s:14:"ckeditor_width";s:4:"100%";s:13:"ckeditor_lang";s:2:"en";s:18:"ckeditor_auto_lang";s:1:"t";s:7:"overlay";i:1;}',
-);
-  $nodes[] = array(
-  'uid' => 1,
-  'title' => 'Administer recording group',
-  'log' => '',
-  'status' => 1,
-  'comment' => 1,
-  'promote' => 0,
-  'sticky' => 0,
-  'vuuid' => 'd2075094-c564-4ec8-8047-242be765f167',
-  'type' => 'iform',
-  'language' => 'und',
-  'tnid' => 0,
-  'translate' => 0,
-  'uuid' => '41303481-66b0-4e2a-9fad-a9a532f89575',
-  'params' => array(
-    'view_access_control' => 1,
-    'permission_name' => 'online recording',
-    'redirect_on_success' => '',
-    'message_after_save' => 1,
-    'additional_css' => '',
-    'additional_templates' => '',
-  ),
-  'iform' => 'group_admin',
-  'needs_review' => 3,
-  'available_for_groups' => 0,
-  'limit_to_group_id' => NULL,
-  'body' => array(),
   'rdf_mapping' => array(
     'rdftype' => array(
       0 => 'sioc:Item',
@@ -789,6 +724,15 @@ pending_path={rootFolder}?q=groups/pending&group_id=',
         {
           "group_id":"{id}"
         }
+      },
+      {
+        "caption":"Leave this group",
+        "img":"{rootFolder}sites/all/modules/iform/media/images/delete.png",
+        "url":"{rootFolder}groups/leave",
+        "urlParams":
+        {
+          "group_id":"{id}"
+        }
       }
     ]
   },
@@ -804,6 +748,7 @@ pending_path={rootFolder}?q=groups/pending&group_id=',
     'message_after_save' => 1,
     'additional_css' => '',
     'additional_templates' => '',
+    'locked_params' => '',
   ),
   'iform' => 'report_grid',
   'needs_review' => 3,
@@ -820,7 +765,7 @@ pending_path={rootFolder}?q=groups/pending&group_id=',
 					<div class="field-items">
 						<div class="field-item even">
 							<p>The following list shows the local recording groups that have been registered on this website which you are already a member of. Access the group\'s own recording and reporting pages via the links in the Links column.</p>
-							<p>To find other groups to join, visit the <a href="?q=groups/list">Browse local recording groups</a> page. You can also create your own local recording group by clicking the <strong>Create a new local recording group</strong> button at the bottom of the page. If you are an administrator of one of the groups, then the icons in the Actions column allow you to edit the group details and invite new members.</p>
+							<p>To find other groups to join, visit the <a href="/groups/list">Browse local recording groups</a> page. You can also create your own local recording group by clicking the <strong>Create a new local recording group</strong> button at the bottom of the page. If you are an administrator of one of the groups, then the icons in the Actions column allow you to edit the group details and invite new members.</p>
 						</div>
 					</div>
 				</div>
@@ -833,7 +778,7 @@ pending_path={rootFolder}?q=groups/pending&group_id=',
         'summary' => NULL,
         'format' => 'filtered_html',
         'safe_value' => '<p>The following list shows the local recording groups that have been registered on this website which you are already a member of. Access the group\'s own recording and reporting pages via the links in the Links column.<br />
-							To find other groups to join, visit the <a href="?q=groups/list">Browse local recording groups</a> page. You can also create your own local recording group by clicking the <strong>Create a new local recording group</strong> button at the bottom of the page. If you are an administrator of one of the groups, then the icons in the Actions column allow you to edit the group details and invite new members.</p>
+							To find other groups to join, visit the <a href="/groups/list">Browse local recording groups</a> page. You can also create your own local recording group by clicking the <strong>Create a new local recording group</strong> button at the bottom of the page. If you are an administrator of one of the groups, then the icons in the Actions column allow you to edit the group details and invite new members.</p>
 <p> </p>
 ',
         'safe_summary' => '',
@@ -928,7 +873,17 @@ pending_path={rootFolder}?q=groups/pending&group_id=',
   'needs_review' => 3,
   'available_for_groups' => 0,
   'limit_to_group_id' => NULL,
-  'body' => array(),
+  'body' => array(
+    'und' => array(
+      0 => array(
+        'value' => '',
+        'summary' => NULL,
+        'format' => 'filtered_html',
+        'safe_value' => '',
+        'safe_summary' => '',
+      ),
+    ),
+  ),
   'rdf_mapping' => array(
     'rdftype' => array(
       0 => 'sioc:Item',
@@ -1273,7 +1228,7 @@ searchArea=',
     'view_access_control' => 0,
     'permission_name' => '',
     'groups_page_path' => 'groups/my-groups',
-    'group_home_path' => 'groups/home',
+    'group_home_path' => 'groups/my-groups',
     'redirect_on_success' => '',
     'message_after_save' => 0,
     'additional_css' => '',
@@ -1283,7 +1238,17 @@ searchArea=',
   'needs_review' => 3,
   'available_for_groups' => 0,
   'limit_to_group_id' => NULL,
-  'body' => array(),
+  'body' => array(
+    'und' => array(
+      0 => array(
+        'value' => '',
+        'summary' => NULL,
+        'format' => 'filtered_html',
+        'safe_value' => '',
+        'safe_summary' => '',
+      ),
+    ),
+  ),
   'rdf_mapping' => array(
     'rdftype' => array(
       0 => 'sioc:Item',
@@ -1436,14 +1401,73 @@ default_input_form=enter-record-list',
     'param_defaults' => '',
     'param_ignores' => '',
     'columns_config_list' => '[
+  [
+    {
+      "actions":
+      [
+        {
+          "caption":"Edit this record",
+          "url":"{rootFolder}{input_form}",
+          "urlParams":
+          {
+            "occurrence_id":"{occurrence_id}"
+          },
+          "img":"{rootFolder}sites/all/modules/iform/media/images/nuvola/package_editors-22px.png",
+          "visibility_field":"belongs_to_user"
+        },
+        {
+          "caption":"View record details",
+          "url":"{rootFolder}details/record",
+          "urlParams":
+          {
+            "occurrence_id":"{occurrence_id}"
+          },
+          "img":"{rootFolder}sites/all/modules/iform/media/images/nuvola/find-22px.png"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "actions":
+      [
+        {
+          "caption":"Species summary",
+          "img":"{rootFolder}sites/all/modules/iform/media/images/nuvola/find-22px.png",
+          "url":"details/species",
+          "urlParams":
+          {
+            "taxon_meaning_id":"{taxon_meaning_id}"
+          }
+        }
+      ]
+    },
+    {
+      "fieldname":"record_status",
+      "visible":false
+    }
+  ],
+  [
 
+  ],
+  [
+
+  ],
+  [
+    {
+      "fieldname":"media",
+      "template":"<div class=\'gallery-item status-{record_status} certainty-{certainty}\'><a class=\'fancybox\' href=\'{imageFolder}{media}\'><img src=\'{imageFolder}thumb-{media}\' title=\'{taxon}\' alt=\'{taxon}\'/><br/>{taxon}</a></div>"
+    }
+  ]
 ]',
     'high_volume' => 0,
     'sharing' => 'reporting',
+    'hide_standard_param_filter' => 0,
     'redirect_on_success' => '',
     'message_after_save' => 1,
     'additional_css' => '',
     'additional_templates' => '',
+    'locked_params' => '',
   ),
   'iform' => 'group_home',
   'needs_review' => 3,
