@@ -143,11 +143,16 @@ function easy_login_synchronise_account_to_warehouse(&$edit, $account, $needToPr
     $fieldsToSync = array();
     foreach ($edit as $field=>$def) {
       if (preg_match('/^field_indicia_/', $field) && $field!=='field_indicia_user_id') {
-        $value = $def[LANGUAGE_NONE][0]['value'];
+        //Check for empty as field without value will have empty $def[LANGUAGE_NONE][0]['value']
+        if (!empty($def[LANGUAGE_NONE][0]['value']))
+          $value = $def[LANGUAGE_NONE][0]['value'];
+        else 
+          $value='';
         // fields that are available for synchronisation must be called field_indicia_*. We
         // also don't want to handle anything that has not actually changed.
         $userField = $existingUser->$field;
-        if ($value !== $userField[LANGUAGE_NONE][0]['value']) {
+        //Check for empty as fields that have not been synced before will have empty $userField
+        if (empty($userField[LANGUAGE_NONE][0]['value']) || ($value !== $userField[LANGUAGE_NONE][0]['value'])) {
           $fieldsToSync[$field] = $value;
         }
       }
@@ -560,7 +565,7 @@ function easy_login_submit_preferences($form, &$form_state) {
       $countDone++;
       $auth['write_tokens']['persist_auth'] = $countDone < count($_POST['alerts']);
       $r = data_entry_helper::forward_post_to('species_alert', $s, $auth['write_tokens']);
-    }
+}
   }
 }
 
