@@ -100,7 +100,7 @@ function notification_emails_form_user_profile_form_alter(&$form, &$form_state, 
     '#collapsed' => FALSE,
   );
 
-  if ($user_id === FALSE) {
+  if (!$user_id) {
     // Early return with error message if no indicia_user_id
     $form['email_fieldset']['error'] = array(
       '#markup' => t('Notification settings cannot be retrieved as user '
