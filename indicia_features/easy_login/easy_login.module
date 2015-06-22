@@ -268,6 +268,9 @@ function _show_user_species_alerts($account, $readAuth) {
  * @return array
  */
 function _easy_login_get_alerts($readAuth, $indicia_user_id) {
+  if (!$indicia_user_id) 
+    // user not linked to warehouse
+    return array();
   try {
     $alerts = data_entry_helper::get_population_data(array(
       'table' => 'species_alert',
