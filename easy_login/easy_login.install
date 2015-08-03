@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * Ensure that date and date_popup modules are enabled.
+ */
+function easy_login_update_7200() {
+  if (!module_exists('date')) {
+    module_enable(array('date'));
+  }
+  if (!module_exists('date_popup')) {
+    module_enable(array('date_popup'));
+  }
+}

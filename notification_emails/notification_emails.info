@@ -1,0 +1,8 @@
+core = 7.x
+dependencies[] = "iform"
+
+description = "Allows a user to change their subscriptions to notification emails. They can change how often they receive emails for the different notification types."
+name = "Email Notifications"
+package = "Indicia Miscellaneous Features"
+project = "notification_emails"
+version = "7.x-1.0"
