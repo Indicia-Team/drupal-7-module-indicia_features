@@ -339,7 +339,7 @@ function _easy_login_get_alerts($readAuth, $indicia_user_id) {
  * Alter the account form to load possible options for location and taxon group from the warehouse.
  */
 function easy_login_form_alter(&$form, &$form_state, $form_id) {
-  if (($form_id === 'user_profile_form' || $form_id === 'user_register')) {
+  if ($form_id === 'user_profile_form') {
     // might be viewing for another user, so dig out the user ID.
     $args = $form_state['build_info']['args'][0];
     global $user;
@@ -501,10 +501,12 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
         );
       }
     }
-    drupal_add_css(drupal_get_path('module','iform').'/media/css/default_site.css');
-    drupal_add_js(drupal_get_path('module', 'easy_login').'/easy_login_form.js');
     $form['#validate'][] = 'easy_login_submit_preferences';
     handle_resources();
+  }
+  if ($form_id === 'user_profile_form' || $form_id === 'user_register_form') {
+    drupal_add_css(drupal_get_path('module','iform').'/media/css/default_site.css');
+    drupal_add_js(drupal_get_path('module', 'easy_login').'/easy_login_form.js');
   }
 }
 
