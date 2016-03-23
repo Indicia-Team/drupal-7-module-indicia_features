@@ -597,8 +597,8 @@ function easy_login_submit_preferences($form, &$form_state) {
       'fields'=>array(
         'website_id' => array('value'=>variable_get('indicia_website_id', '')),
         'user_id' => array('value'=>$form_state['values']['field_indicia_user_id'][LANGUAGE_NONE][0]['value']),
-        'anonymous' => $anonValueToSave
-      ));
+        'anonymous' => array('value'=>$anonValueToSave)
+    ));
     //Need to use existing users_websites row where possible
     if ($existingUsersWebsiteId[0]['id'])
       $s['fields']['id']['value']=$existingUsersWebsiteId[0]['id'];
