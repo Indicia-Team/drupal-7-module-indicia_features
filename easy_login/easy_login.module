@@ -578,6 +578,32 @@ function easy_login_submit_preferences($form, &$form_state) {
       $r = data_entry_helper::forward_post_to('species_alert', $s, $auth['write_tokens']);
     }
   }
+  //Save anonymous column in users_websites if a field called Anonymous is available (field_anonymous)
+  if (isset($form_state['values']['field_anonymous'][LANGUAGE_NONE][0]['value'])) {
+    $auth = data_entry_helper::get_read_write_auth(variable_get('indicia_website_id', ''), variable_get('indicia_password', ''));
+    $existingUsersWebsiteId = data_entry_helper::get_population_data(array(
+      'table'=>'users_website',
+      'extraParams'=> $auth['read'] + array('website_id' => variable_get('indicia_website_id', ''),'user_id' => $form_state['values']['field_indicia_user_id'][LANGUAGE_NONE][0]['value']),
+      'nocache' => true
+    ));
+    //Need to convert from 1/0 to true/false for saving
+    if ($form_state['values']['field_anonymous'][LANGUAGE_NONE][0]['value']=='1') {
+      $anonValueToSave='t';
+    } else {
+      $anonValueToSave='f';
+    }
+    $s = array(
+      'id'=>'users_website',
+      'fields'=>array(
+        'website_id' => array('value'=>variable_get('indicia_website_id', '')),
+        'user_id' => array('value'=>$form_state['values']['field_indicia_user_id'][LANGUAGE_NONE][0]['value']),
+        'anonymous' => $anonValueToSave
+      ));
+    //Need to use existing users_websites row where possible
+    if ($existingUsersWebsiteId[0]['id'])
+      $s['fields']['id']['value']=$existingUsersWebsiteId[0]['id'];
+    $r = data_entry_helper::forward_post_to('users_website', $s, $auth['write_tokens']);
+  }
 }
 
 /**
