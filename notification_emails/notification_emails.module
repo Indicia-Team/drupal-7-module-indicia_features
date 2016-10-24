@@ -54,6 +54,7 @@ function notification_emails_user_login(&$edit, $account) {
     _notification_emails_set_default_frequency($submission_for_new_user, 'verification', 'V', 'D');
     _notification_emails_set_default_frequency($submission_for_new_user, 'milestone', 'M', 'D');
     _notification_emails_set_default_frequency($submission_for_new_user, 'verifier_task', 'VT', 'D');
+    _notification_emails_set_default_frequency($submission_for_new_user, 'pending_groups_users', 'GU', 'D');
     _notification_emails_set_default_frequency($submission_for_new_user, 'pending_record_task', 'PT', 'D');
     // Update the warehouse.
     create_notification_emails_settings_submission($submission_for_new_user);
@@ -91,7 +92,7 @@ function notification_emails_form_user_profile_form_alter(&$form, &$form_state, 
   $_notification_emails_existing_data = array();
   iform_load_helpers(array('data_entry_helper'));
   
-// Get the indicia_user_id for the user whose profile is being viewed.
+  // Get the indicia_user_id for the user whose profile is being viewed.
   $user_id = hostsite_get_user_field('indicia_user_id', FALSE, FALSE, $form_state['user']->uid);
 
   // Create a container on the form to hold all notification form elements.
@@ -132,7 +133,8 @@ jQuery(document).ready(function($) {
                             '#edit-email-verification-frequency, ' +
                             '#edit-email-milestone-frequency, ' +
                             '#edit-email-verifier-task-frequency, ' +
-                            '#edit-email-pending-record-task-frequency');
+                            '#edit-email-pending-record-task-frequency, ' +
+                            '#edit-email-pending-groups_users-frequency');
   
   $('#edit-email-frequency').change(function() {
     // Change advanced settings to match overall setting.
@@ -180,6 +182,7 @@ jQuery(document).ready(function($) {
     array('record_cleaner', 'automated Record Cleaner record checks', 'A'),
     array('verification', 'verification of your records', 'V'),
     array('milestone', "milestones and awards you've achieved", 'M'),
+    array('pending_groups_users', "pending members for groups you administer", 'GU'),
   );
   if (user_access('verification')) {
     $selects[] = array('verifier_task', "records for you to verify", 'VT');
@@ -286,6 +289,10 @@ function create_notification_emails_settings_submission($edit, $account = FALSE)
 
       case 'email_pending_record_task_frequency':
         $source_type = 'PT';
+        break;
+
+      case 'email_pending_groups_users_frequency':
+        $source_type = 'GU';
         break;
 
       default:
