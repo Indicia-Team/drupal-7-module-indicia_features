@@ -660,7 +660,8 @@ function easy_login_call_get_user_id($account, $force=null, $users_to_merge=null
     drupal_set_message(t('Your user information has been updated.'));
   }
   $postargs .= '&shares_to_prevent=';
-  if (isset($account->field_record_privacy) && $account->field_record_privacy) 
+  if (isset($account->field_record_privacy) && $account->field_record_privacy
+      && $account->field_record_privacy[LANGUAGE_NONE][0]['value'] !== 0)
     $postargs .= 'reporting,peer_review,verification,data_flow,moderation';
   if ($users_to_merge)
     $postargs .= '&user_to_merge='.urlencode(json_encode($users_to_merge));
