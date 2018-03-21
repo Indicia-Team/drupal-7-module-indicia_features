@@ -205,6 +205,18 @@ function easy_login_move_form_data_into_account($edit, &$account) {
 }
 
 /**
+ * Implements hook_user_insert. Synchronises user fields to matching custom attributes on the
+ * Indicia warehouse, if the user is created as active.
+ * @param array $edit Form edit data
+ * @param array $account User account
+ */
+function easy_login_user_insert(&$edit, $account) {
+  if($account->status) {
+    easy_login_synchronise_account_to_warehouse($edit, $account, false);
+  }
+}
+
+/**
  * Implements hook_user_update. Synchronises user fields to matching custom attributes on the
  * Indicia warehouse.
  * @param array $edit Form edit data
