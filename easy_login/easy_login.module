@@ -151,10 +151,10 @@ function easy_login_synchronise_account_to_warehouse(&$edit, $account, $needToPr
         // fields that are available for synchronisation must be called field_indicia_*. We
         // also don't want to handle anything that has not actually changed.
         $userField = $existingUser->$field;
-        //Check for empty as fields that have not been synced before will have empty $userField
-        if (empty($userField[LANGUAGE_NONE][0]['value']) || ($value !== $userField[LANGUAGE_NONE][0]['value'])) {
-          $fieldsToSync[$field] = $value;
-        }
+        // Note: there used to be an if statement around this field to make sure it was previously empty or had changed before doing a sync.
+        // This does not work in the situation where a user registers and is then activated, as the first sync should occur at activation
+        // when actually a field might of been filled at registration and won't have changed.
+        $fieldsToSync[$field] = $value;
       }
     }
     
