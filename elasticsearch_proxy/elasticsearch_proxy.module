@@ -95,12 +95,12 @@ function elasticsearch_proxy_callback($report = NULL) {
     elasticsearch_proxy_callback_fail(403, 'Forbidden', 'Report access restricted.');
     return;
   }
-  $postData = json_decode($config['request']);
-  $header = ['content-type: application/x-www-form-urlencoded; charset=UTF-8'];
+  $postData = json_encode($config['request']);
   $curl = curl_init("$elasticUrl/_search");
-  curl_setopt($curl,CURLOPT_HTTPHEADER, $header);
+  curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
   curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
   curl_setopt($curl, CURLOPT_POSTFIELDS, $postData);
   $response = curl_exec($curl);
+  drupal_add_http_header('Content-Type', 'application/json');
   echo $response;
 }
