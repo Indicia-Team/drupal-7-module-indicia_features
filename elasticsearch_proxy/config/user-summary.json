@@ -3,14 +3,14 @@
   "request": {
     "size": 0,
     "query": {
-      "match" : { "created_by_id" : {{ indicia_user_id }} }
+      "match" : { "created_by_id" : #indicia_user_id# }
     },
     "aggs" : {
       "records" : {
         "adjacency_matrix" : {
           "filters" : {
             "V" : { "match" : { "record_status.keyword" : "V" }},
-            "verified_by" : { "match" : { "verified_by_id" : {{ indicia_user_id }} }},
+            "verified_by" : { "match" : { "verified_by_id" : #indicia_user_id# }},
             "yr" : { "range" : {
               "date_start" : {
                 "gte" : "now-1y/d",

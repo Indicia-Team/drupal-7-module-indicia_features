@@ -77,7 +77,7 @@ function elasticsearch_proxy_callback($report = NULL) {
   }
   $content = file_get_contents($report);
   $indiciaUserId = hostsite_get_user_field('indicia_user_id');
-  $content = str_replace('{{ indicia_user_id }}', $indiciaUserId, $content);
+  $content = str_replace('#indicia_user_id#', $indiciaUserId, $content);
   $config = json_decode($content, TRUE);
   if (empty($config['access'])) {
     elasticsearch_proxy_callback_fail(500, 'Internal server error', 'Invalid report yaml - access setting missing');
@@ -96,10 +96,11 @@ function elasticsearch_proxy_callback($report = NULL) {
     return;
   }
   $postData = json_decode($config['request']);
-  $session = curl_init("$elasticUrl/api/console/proxy?path=_search&method=POST");
-  curl_setopt($session, CURLOPT_HEADER, true);
-  curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
-  curl_setopt($session, CURLOPT_REFERER, $_SERVER['HTTP_HOST']);
-  $response = curl_exec($session);
+  $header = ['content-type: application/x-www-form-urlencoded; charset=UTF-8'];
+  $curl = curl_init("$elasticUrl/_search");
+  curl_setopt($curl,CURLOPT_HTTPHEADER, $header);
+  curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+  curl_setopt($curl, CURLOPT_POSTFIELDS, $postData);
+  $response = curl_exec($curl);
   echo $response;
 }
