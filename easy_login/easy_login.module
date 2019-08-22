@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Code for the Easy Login feature.
@@ -7,9 +8,10 @@
 include_once 'easy_login.features.inc';
 
 /**
- * Implementation of hook menu.
- * Exposes a form that can resolve the case when there are several possible users that this account can be linked to
- * on the warehouse.
+ * Implements hook_menu().
+ *
+ * Exposes a form that can resolve the case when there are several possible
+ * users that this account can be linked to on the warehouse.
  */
 function easy_login_menu() {
   $items['resolve_multiple_users'] = array(
@@ -17,39 +19,43 @@ function easy_login_menu() {
     'page arguments'   => array('resolve_multiple_users_form'),
     'type' => MENU_CALLBACK,
     'access callback' => 'user_access',
-    'access arguments' => array('post comments'), // anyone logged in
+    // Anyone logged in.
+    'access arguments' => array('post comments'),
   );
   return $items;
 }
 
+/**
+ * Implements hook_permission().
+ */
 function easy_login_permission() {
   return array(
     'collate regional records' => array(
-      'title' => t('Access and collate records from a region'), 
-    )
+      'title' => t('Access and collate records from a region'),
+    ),
   );
 }
 
 function resolve_multiple_users_form() {
   $userList = $_SESSION['multiple_users_to_resolve'];
-  drupal_set_message(t('There appear to be several existing users on the central records database which may or may not be yours. They are users of the '.
+  drupal_set_message(t('There appear to be several existing users on the central records database which may or may not be yours. They are users of the ' .
         'following websites. Please tick the ones which you agree you have been a user of then press Save.'));
   $websites = array();
   foreach ($userList as $user) {
-    if ($user->website_id!==variable_get('indicia_website_id', 0))
+    if ($user->website_id !== variable_get('indicia_website_id', 0))
       $websites[$user->website_id] = $user->title;
   }
   $form['website_list'] = array(
-    '#type'=>'fieldset',
-    '#title'=>t('List of websites you might be a user of:')
+    '#type' => 'fieldset',
+    '#title' => t('List of websites you might be a user of:'),
   );
   $form['website_list']['websites'] = array(
     '#type' => 'checkboxes',
-    '#options' => $websites
+    '#options' => $websites,
   );
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Save')
+    '#value' => t('Save'),
   );
   return $form;
 }
@@ -58,48 +64,54 @@ function resolve_multiple_users_form_submit($form, &$form_state) {
   $userList = $_SESSION['multiple_users_to_resolve'];
   $listToMerge = array();
   $tickedWebsites = array();
-  foreach($form_state['values']['websites'] as $website_id=>$ticked) {
-    if ($ticked!==0) {
+  foreach ($form_state['values']['websites'] as $website_id => $ticked) {
+    if ($ticked !== 0) {
       $tickedWebsites[] = $website_id;
     }
   }
   foreach ($userList as $user) {
-    if ($user->website_id===variable_get('indicia_website_id', 0) || in_array($user->website_id, $tickedWebsites))
+    if ($user->website_id === variable_get('indicia_website_id', 0) || in_array($user->website_id, $tickedWebsites)) {
       $listToMerge[] = $user->user_id;
+    }
   }
   $user = user_load($_SESSION['uid_to_resolve']);
   $response = easy_login_call_get_user_id($user, 'merge', $listToMerge);
   easy_login_handle_get_user_id_response($user, $response);
-  drupal_goto('user/'.$user->uid.'/edit');
+  drupal_goto("user/$user->uid/edit");
 }
 
 /**
- * Implement hook_user_view.
+ * Implements hook_user_view().
+ *
  * Tidies up the view tab of a user account.
- * @param object $account User account
+ *
  * @throws \exception
  */
 function easy_login_user_view($account) {
   iform_load_helpers(array('data_entry_helper'));
-  $readAuth=data_entry_helper::get_read_auth(variable_get('indicia_website_id',''), variable_get('indicia_password',''));
-  _easy_login_set_view_account_for_table('location', 'name', $account, 'field_location', $readAuth, 
+  $readAuth = data_entry_helper::get_read_auth(variable_get('indicia_website_id', ''), variable_get('indicia_password', ''));
+  _easy_login_set_view_account_for_table('location', 'name', $account, 'field_location', $readAuth,
       'Recording preferences', 'Your preferred locality for recording is !items.');
-  if (user_access('verification', $account))
-    _easy_login_set_view_account_for_table('location', 'name', $account, 'field_location_expertise', $readAuth, 
+  if (user_access('verification', $account)) {
+    _easy_login_set_view_account_for_table('location', 'name', $account, 'field_location_expertise', $readAuth,
         'Verification settings', 'Your locality for verification is !items.');
-  else
+  }
+  else {
     unset($account->content['field_location_expertise']);
-  if (user_access('collate regional records', $account))
-    _easy_login_set_view_account_for_table('location', 'name', $account, 'field_location_collation', $readAuth, 
+  }
+  if (user_access('collate regional records', $account)) {
+    _easy_login_set_view_account_for_table('location', 'name', $account, 'field_location_collation', $readAuth,
         'Data collation settings', 'Your locality for data collation downloads is !items.');
-  else
+  }
+  else {
     unset($account->content['field_location_collation']);
-  _easy_login_set_view_account_for_table('taxon_group', 'title', $account, 'field_taxon_groups', $readAuth, 
+  }
+  _easy_login_set_view_account_for_table('taxon_group', 'title', $account, 'field_taxon_groups', $readAuth,
       'Recording preferences', 'Your preferred species groups for recording are !items.');
   if (user_access('verification', $account)) {
-    _easy_login_set_view_account_for_table('taxon_group', 'title', $account, 'field_taxon_groups_expertise', $readAuth, 
+    _easy_login_set_view_account_for_table('taxon_group', 'title', $account, 'field_taxon_groups_expertise', $readAuth,
         'Verification settings', 'Your species groups for verification are !items.');
-    _easy_login_set_view_account_for_table('survey', 'title', $account, 'field_surveys_expertise', $readAuth, 
+    _easy_login_set_view_account_for_table('survey', 'title', $account, 'field_surveys_expertise', $readAuth,
         'Verification settings', 'Your surveys for verification are !items.');
   }
   else {
@@ -107,29 +119,33 @@ function easy_login_user_view($account) {
     unset($account->content['field_surveys_expertise']);
   }
   if (isset($account->content['field_record_privacy'])) {
-    // convert a boolean to something more readable
-    $account->content['field_record_privacy']['#title']=t('Record privacy');
-    $account->content['field_record_privacy']['#markup']=t(
+    // Convert a boolean to something more readable.
+    $account->content['field_record_privacy']['#title'] = t('Record privacy');
+    $account->content['field_record_privacy']['#markup'] = t(
         'You have opted not to share your records with other websites.');
   }
-  if (!user_access('administer users'))
+  if (!user_access('administer users')) {
     unset($account->content['field_indicia_user_id']);
+  }
   _show_user_species_alerts($account, $readAuth);
 }
 
 function easy_login_user_login(&$edit, $account) {
   if (empty($account->field_last_name)) {
-    drupal_set_message('Please set at least your last name on your '.l('user account', 'user/'.$account->uid.'/edit').
+    drupal_set_message('Please set at least your last name on your ' . l('user account', "user/$account->uid/edit") .
         '. This will allow your user registration to be linked properly to the central database of records.');
     return;
-  } 
-  elseif ($account->access!==0 && !empty($account->field_indicia_user_id))
-    // if not first login and we know our indicia user ID, then there is nothing more to do
+  }
+  elseif ($account->access !== 0 && !empty($account->field_indicia_user_id)) {
+    // If not first login and we know our indicia user ID, then there is
+    // nothing more to do.
     return;
+  }
   else {
-    // if we've logged in before but don't have a warehouse user ID, then it means Easy Login was installed since
-    // we last logged in. So there might be existing records to move into our user account.
-    $needToProcessExistingRecords = ($account->access!==0) && empty($account->field_indicia_user_id);
+    // If we've logged in before but don't have a warehouse user ID, then it
+    // means Easy Login was installed since we last logged in. So there might
+    // be existing records to move into our user account.
+    $needToProcessExistingRecords = ($account->access !== 0) && empty($account->field_indicia_user_id);
     easy_login_synchronise_account_to_warehouse($edit, $account, $needToProcessExistingRecords);
   }
 }
@@ -138,37 +154,41 @@ function easy_login_synchronise_account_to_warehouse(&$edit, $account, $needToPr
   $fieldsToSyncByCaption = array();
   global $user;
   $existingUser = user_load($account->uid);
-  // $edit can be empty during initial registration
+  // $edit can be empty during initial registration.
   if (!empty($edit)) {
     $fieldsToSync = array();
-    foreach ($edit as $field=>$def) {
-      if (preg_match('/^field_indicia_/', $field) && $field!=='field_indicia_user_id') {
-        //Check for empty as field without value will have empty $def[LANGUAGE_NONE][0]['value']
-        if (!empty($def[LANGUAGE_NONE][0]['value']))
+    foreach ($edit as $field => $def) {
+      if (preg_match('/^field_indicia_/', $field) && $field !== 'field_indicia_user_id') {
+        // Check for empty as field without value will have empty
+        // $def[LANGUAGE_NONE][0]['value'].
+        if (!empty($def[LANGUAGE_NONE][0]['value'])) {
           $value = $def[LANGUAGE_NONE][0]['value'];
-        else 
-          $value='';
-        // fields that are available for synchronisation must be called field_indicia_*. We
-        // also don't want to handle anything that has not actually changed.
-        $userField = $existingUser->$field;
-        //Check for empty as fields that have not been synced before will have empty $userField
-        if (empty($userField[LANGUAGE_NONE][0]['value']) || ($value !== $userField[LANGUAGE_NONE][0]['value'])) {
-          $fieldsToSync[$field] = $value;
         }
+        else {
+          $value = '';
+        }
+        // Fields that are available for synchronisation must be called
+        // field_indicia_*. We also don't want to handle anything that has not
+        // actually changed.
+        $userField = $existingUser->$field;
+        // Note: there used to be an if statement around this field to make sure it was previously empty or had changed before doing a sync.
+        // This does not work in the situation where a user registers and is then activated, as the first sync should occur at activation
+        // when actually a field might of been filled at registration and won't have changed.
+        $fieldsToSync[$field] = $value;
       }
     }
-    
+
     if (count($fieldsToSync)) {
-      // Indicia requires fields to match on the caption, so we need to query the captions and
-      // convert the array.
-      $r = db_query("select data, field_name from {field_config_instance} where field_name in (:ids) and entity_type='user'", 
+      // Indicia requires fields to match on the caption, so we need to query
+      // the captions and convert the array.
+      $r = db_query("select data, field_name from {field_config_instance} where field_name in (:ids) and entity_type='user'",
           array(':ids' => array_keys($fieldsToSync)));
-      foreach($r as $row) {
+      foreach ($r as $row) {
         $blob = unserialize($row->data);
-        $fieldsToSyncByCaption[$blob['label']]=$fieldsToSync[$row->field_name];
+        $fieldsToSyncByCaption[$blob['label']] = $fieldsToSync[$row->field_name];
       }
     }
-    if ($account->uid===$user->uid) {
+    if ($account->uid === $user->uid) {
       // If the user has not filled in preferences then prompt them. Allow for the fact that the site administrator might have
       // hidden these fields if they feel they are not relevant to the site.
       $requests = array();
@@ -205,6 +225,18 @@ function easy_login_move_form_data_into_account($edit, &$account) {
 }
 
 /**
+ * Implements hook_user_insert. Synchronises user fields to matching custom attributes on the
+ * Indicia warehouse, if the user is created as active.
+ * @param array $edit Form edit data
+ * @param array $account User account
+ */
+function easy_login_user_insert(&$edit, $account) {
+  if($account->status) {
+    easy_login_synchronise_account_to_warehouse($edit, $account, false);
+  }
+}
+
+/**
  * Implements hook_user_update. Synchronises user fields to matching custom attributes on the
  * Indicia warehouse.
  * @param array $edit Form edit data
@@ -229,7 +261,7 @@ function _easy_login_set_view_account_for_table($table, $titleField, &$account, 
         '#title' => t($title),
         '#weight' => 1
       );
-    
+
     $account->content[$section][$userField] = array(
         '#markup'=>t($description, array('!items'=>$itemList)).'<br/>',
         '#title'=>'',
@@ -268,7 +300,7 @@ function _show_user_species_alerts($account, $readAuth) {
  * @return array
  */
 function _easy_login_get_alerts($readAuth, $indicia_user_id) {
-  if (!$indicia_user_id) 
+  if (!$indicia_user_id)
     // user not linked to warehouse
     return array();
   try {
@@ -285,7 +317,7 @@ function _easy_login_get_alerts($readAuth, $indicia_user_id) {
     return array();
   }
   if(array_key_exists('error', $alerts)) {
-    // Most likely because the species_alerts module is not enabled on the 
+    // Most likely because the species_alerts module is not enabled on the
     // warehouse, so we can ignore alerts. However, you can still expect a nasty
     // looking error because http_post gets an internal server error 500 from
     // the warehouse which is echoed to the output.
@@ -344,12 +376,12 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
     $args = $form_state['build_info']['args'][0];
     global $user;
     $thisUser = user_load($args->uid);
-    
+
     iform_load_helpers(array('data_entry_helper'));
     $readAuth = data_entry_helper::get_read_auth(variable_get('indicia_website_id', ''), variable_get('indicia_password', ''));
     if (isset($form['field_location']))
       $lang = $form['field_location']['#language'];
-    else 
+    else
       $lang = LANGUAGE_NONE; // default undefined
     // Hide warehouse link and remembered field mappings unless admin
     if (!user_access('administer users')) {
@@ -432,7 +464,7 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
           'extraParams' => $readAuth + array('sharing'=>'verification'),
           'default'=>$surveys,
           'class'=>'control-width-5',
-          'helpText' => $form['field_surveys_expertise'][$lang]['#description'] 
+          'helpText' => $form['field_surveys_expertise'][$lang]['#description']
         )),
         '#type'=>'markup'
       );
@@ -441,15 +473,15 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
     // of verification settings. We'll remove the actual fields in a moment.
     if (user_access('verification', $thisUser) && !user_access('administer users')) {
       $verification_info =  array();
-      $verification_info[] = t('Your locality for verification: !items.', 
+      $verification_info[] = t('Your locality for verification: !items.',
           array('!items' => _easy_login_get_user_field_as_list('location', $user, 'field_location_expertise', 'name', $readAuth)));
-      $verification_info[] = t('Your taxon groups for verification: !items.', 
+      $verification_info[] = t('Your taxon groups for verification: !items.',
           array('!items' => _easy_login_get_user_field_as_list('taxon_group', $user, 'field_taxon_groups_expertise', 'title', $readAuth)));
-      $verification_info[] = t('Your surveys for verification: !items.', 
+      $verification_info[] = t('Your surveys for verification: !items.',
           array('!items' => _easy_login_get_user_field_as_list('survey', $user, 'field_surveys_expertise', 'title', $readAuth)));
       $form['verification_info'] = array(
         '#markup' => '<div class="form-item"><label>' . t('Verification settings') . '</label><ul><li>' .
-          implode("</li>\n<li>", $verification_info) . '</li></ul>' . 
+          implode("</li>\n<li>", $verification_info) . '</li></ul>' .
           '<div class="description">' . t('If you want to change any of these settings, please contact the website administrator.') . '</div></div>',
       );
       $form['#group_children']['verification_info'] = 'group_verification';
@@ -457,8 +489,8 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
     if (user_access('collate regional records', $thisUser) && !user_access('administer users')) {
       $form['collation_info'] = array(
         '#markup' => '<div class="form-item"><label>' . t('Record collation settings') . '</label><ul><li>' .
-          t('Your locality for collation: !items.', 
-          array('!items' => _easy_login_get_user_field_as_list('location', $user, 'field_location_collation', 'name', $readAuth))) . '</ul></li>' . 
+          t('Your locality for collation: !items.',
+          array('!items' => _easy_login_get_user_field_as_list('location', $user, 'field_location_collation', 'name', $readAuth))) . '</ul></li>' .
           '<div class="description">' . t('If you want to change this setting, please contact the website administrator.') . '</div></div>'
       );
       if (isset($form['field_location_collation'])) {
@@ -612,7 +644,7 @@ function easy_login_submit_preferences($form, &$form_state) {
  */
 function _easy_login_get_user_field_as_list($table, $account, $userField, $titleField, $readAuth) {
   $value = hostsite_get_user_field($userField, false, true, $account->uid);
-  
+
   if (!$value)
     return '<strong>' . t('not specified') . '</strong>';
   else {
@@ -624,7 +656,7 @@ function _easy_login_get_user_field_as_list($table, $account, $userField, $title
       )
     ));
     $itemList=array();
-    foreach($items as $item) 
+    foreach($items as $item)
       $itemList[]='<strong>'.$item[$titleField].'</strong>';
     return implode(', ', $itemList);
   }
@@ -656,14 +688,17 @@ function easy_login_call_get_user_id($account, $force=null, $users_to_merge=null
     $postargs .= '&first_name='.urlencode($account->field_first_name[LANGUAGE_NONE][0]['value']);
   if ($force && ($force==='merge' || $force==='split')) {
     $postargs .= '&force='.$force;
-    // We are definitely doing something on the server, so can inform the user
+    // We are definitely doing something on the server, so can inform the user.
     drupal_set_message(t('Your user information has been updated.'));
   }
   $postargs .= '&shares_to_prevent=';
-  if (isset($account->field_record_privacy) && $account->field_record_privacy) 
+  if (isset($account->field_record_privacy) && $account->field_record_privacy
+      && $account->field_record_privacy[LANGUAGE_NONE][0]['value'] !== 0) {
     $postargs .= 'reporting,peer_review,verification,data_flow,moderation';
-  if ($users_to_merge)
-    $postargs .= '&user_to_merge='.urlencode(json_encode($users_to_merge));
+  }
+  if ($users_to_merge) {
+    $postargs .= '&user_to_merge=' . urlencode(json_encode($users_to_merge));
+  }
   $response = data_entry_helper::http_post($url, $postargs);
   return $response['output'];
 }
@@ -690,7 +725,7 @@ function easy_login_handle_get_user_id_response($account, $response) {
       $info = field_info_field('field_indicia_user_id');
       $fields = array($info['id']);
       //Execute the storage function
-      field_sql_storage_field_storage_write('user', $account,  FIELD_STORAGE_UPDATE, $fields); 
+      field_sql_storage_field_storage_write('user', $account,  FIELD_STORAGE_UPDATE, $fields);
       // clear field cache
       cache_clear_all("field:user:$account->uid", 'cache_field');
     }
