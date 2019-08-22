@@ -1,7 +1,0 @@
-name = Elasticsearch proxy
-description = Provides access to predefined Elasticsearch queries with access control applied.
-core = 7.x
-package = Indicia Miscellaneous Features
-version = 7.x-1.0
-project = elasticsearch_proxy
-dependencies[] = iform
