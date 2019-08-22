@@ -542,19 +542,24 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
+/**
+ * Loads the list of locations from which to select user's region.
+ */
 function easy_login_get_locations($readAuth, $typeVarName) {
-  // Load the list of locations, filtered by location type if the setting is defined.
-  $extraParams=array('orderby'=>'name', 'sortdir'=>'ASC');
-  if ($locType=variable_get($typeVarName, ''))
-    $extraParams['location_type_id']=$locType;
+  // Load the list of locations, filtered by location type if the setting is
+  // defined.
+  $extraParams = array('orderby' => 'name', 'sortdir' => 'ASC');
+  if ($locType = variable_get($typeVarName, '')) {
+    $extraParams['location_type_id'] = $locType;
+  }
   $response = data_entry_helper::get_population_data(array(
     'table' => 'location',
     'extraParams' => $readAuth + $extraParams,
     'nocache' => FALSE,
   ));
-  $locations=array(''=>t('<Please select>'));
+  $locations = array('' => t('<Please select>'));
   foreach ($response as $location) {
-    $locations[$location['id']]=$location['name'];
+    $locations[$location['id']] = $location['name'];
   }
   return $locations;
 }
