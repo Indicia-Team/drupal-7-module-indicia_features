@@ -390,7 +390,7 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
     }
     // The fields can be hidden for sites that don't want them, so check they exist on the form.
     if (isset($form['field_location']) || isset($form['field_location_expertise'])) {
-      $locations=easy_login_get_locations($readAuth,'indicia_profile_location_type_id');
+      $locations = easy_login_get_locations($readAuth, 'indicia_profile_location_type_id');
       if (isset($form['field_location'])) {
         $form['field_location'][$lang]['#options'] = $locations;
         // as it is a dynamic list of options, we need to reset the current value
@@ -403,7 +403,7 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
       }
     }
     if (isset($form['field_location_collation'])) {
-      $locations=easy_login_get_locations($readAuth,'indicia_profile_collation_location_type_id');
+      $locations = easy_login_get_locations($readAuth, 'indicia_profile_collation_location_type_id');
       $form['field_location_collation'][$lang]['#options'] = $locations;
       // as it is a dynamic list of options, we need to reset the current value
       $form['field_location_collation'][$lang]['#default_value'] = hostsite_get_user_field('location_collation', false, false, $thisUser->uid);
@@ -546,18 +546,20 @@ function easy_login_form_alter(&$form, &$form_state, $form_id) {
  * Loads the list of locations from which to select user's region.
  */
 function easy_login_get_locations($readAuth, $typeVarName) {
-  // Load the list of locations, filtered by location type if the setting is
-  // defined.
-  $extraParams = array('orderby' => 'name', 'sortdir' => 'ASC');
-  if ($locType = variable_get($typeVarName, '')) {
-    $extraParams['location_type_id'] = $locType;
+  $locType = variable_get($typeVarName, '');
+  if (!$locType) {
+    // If variable not set, don't load all locations.
+    return ['' => t('<No locations available>')];
   }
   $response = data_entry_helper::get_population_data(array(
     'table' => 'location',
-    'extraParams' => $readAuth + $extraParams,
-    'nocache' => FALSE,
+    'extraParams' => $readAuth + [
+      'orderby' => 'name',
+      'sortdir' => 'ASC',
+      'location_type_id' => $locType,
+    ],
   ));
-  $locations = array('' => t('<Please select>'));
+  $locations = ['' => t('<Please select>')];
   foreach ($response as $location) {
     $locations[$location['id']] = $location['name'];
   }
