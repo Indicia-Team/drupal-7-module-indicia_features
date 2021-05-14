@@ -12,18 +12,18 @@
 $existing_ids = array();
 
 /**
- * Internal function to set one of the email notification frequency fields in the submission to it's 
+ * Internal function to set one of the email notification frequency fields in the submission to it's
  * default value.
  */
 function _notification_emails_set_default_frequency(&$submission, $name, $code, $default) {
   $f = variable_get("indicia_email_frequency_$code", $default);
-  if ($f) 
+  if ($f)
     $submission["email_{$name}_frequency"]=$f;
 }
 
 /**
  * Implements hook_user_login().
- * 
+ *
  * When a user is created, then automatically create profile fields
  * However as the user id is only created in the warehouse when the user
  * first logs into drupal, we can only create the user email notification
@@ -31,16 +31,16 @@ function _notification_emails_set_default_frequency(&$submission, $name, $code, 
  * any settings for email notifications at all yet then create some.
  */
 function notification_emails_user_login(&$edit, $account) {
-  iform_load_helpers(array('data_entry_helper'));
+  iform_load_helpers(array('report_helper'));
   $user_id = hostsite_get_user_field('indicia_user_id');
-  $read_auth = data_entry_helper::get_read_auth(variable_get('indicia_website_id', ''), variable_get('indicia_password', ''));
+  $read_auth = report_helper::get_read_auth(variable_get('indicia_website_id', ''), variable_get('indicia_password', ''));
 
   // We need to use a report rather than just the database view here as the view
   // would return nothing if items had been deleted. We need to know when there
   // are deleted items as it means the user previously had settings that they
   // have removed themselves, so we don't want to create more defaults in that
   // situation.
-  $freq_settings_data = data_entry_helper::get_report_data(array(
+  $freq_settings_data = report_helper::get_report_data(array(
     'dataSource' => 'library/user_email_notification_settings/user_email_notification_settings_inc_deleted',
     'readAuth' => $read_auth,
     'extraParams' => array('user_id' => $user_id),
@@ -73,7 +73,7 @@ function notification_emails_user_presave(&$edit, $account, $category) {
   // with $account->uid = 0
   // When a user registers through a mobile app this function is called with
   // $account->is_new = true.
-   
+
   // If $account->uid exists and is > 0 then update the warehouse so it is in
   // sync with the settings in Drupal
   if(isset($account->uid) && $account->uid > 0) {
@@ -91,7 +91,7 @@ function notification_emails_form_user_profile_form_alter(&$form, &$form_state, 
   global $_notification_emails_existing_data;
   $_notification_emails_existing_data = array();
   iform_load_helpers(array('data_entry_helper'));
-  
+
   // Get the indicia_user_id for the user whose profile is being viewed.
   $user_id = hostsite_get_user_field('indicia_user_id', FALSE, FALSE, $form_state['user']->uid);
 
@@ -135,7 +135,7 @@ jQuery(document).ready(function($) {
                             '#edit-email-verifier-task-frequency, ' +
                             '#edit-email-pending-record-task-frequency, ' +
                             '#edit-email-pending-groups_users-frequency');
-  
+
   $('#edit-email-frequency').change(function() {
     // Change advanced settings to match overall setting.
     \$advancedSelects.val($('#edit-email-frequency').val());
@@ -202,13 +202,13 @@ jQuery(document).ready(function($) {
  * Create form elements for selecting advanced options.
  *
  * @param array $selects
- *   The list of selects to create. Each element is an array(machine_name, 
+ *   The list of selects to create. Each element is an array(machine_name,
  *   description, code).
  * @param string $overall_mode
  *   Returns overall frequency. Used to return a notification frequency if all
  *   the selects are the same or '-'.
  *
- * @return array 
+ * @return array
  *   The form definition of the advanced selects.
  */
 function notification_emails_advanced_selects($selects, &$overall_mode) {
