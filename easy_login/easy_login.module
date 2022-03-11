@@ -300,6 +300,12 @@ function _show_user_species_alerts($account, $readAuth) {
  * @return array
  */
 function _easy_login_get_alerts($readAuth, $indicia_user_id) {
+  // Don't run function if the current user is not the same as the account page being displayed.
+  // This avoids a security error message (although it will stop the alerts showing for administrators
+  // viewing other profiles)
+  if ($indicia_user_id !== hostsite_get_user_field('indicia_user_id')) {
+    return array();
+  }
   if (!$indicia_user_id)
     // user not linked to warehouse
     return array();
